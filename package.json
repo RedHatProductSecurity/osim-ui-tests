@@ -1,0 +1,45 @@
+{
+  "name": "osim-integration-tests",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "private": true,
+  "devDependencies": {
+    "@faker-js/faker": "^9.2.0",
+    "@playwright/browser-chromium": "^1.48.2",
+    "@playwright/browser-firefox": "^1.48.2",
+    "@playwright/test": "^1.48.2",
+    "@stylistic/eslint-plugin": "^2.10.1",
+    "@types/eslint__js": "^8.42.3",
+    "@types/kerberos": "^1.1.5",
+    "@types/node": "^22.9.0",
+    "@typescript-eslint/eslint-plugin": "^8.14.1-alpha.8",
+    "@typescript-eslint/parser": "^8.14.1-alpha.8",
+    "dayjs": "^1.11.13",
+    "dotenv": "^16.4.5",
+    "eslint": "^9.14",
+    "husky": "^9.1.6",
+    "kerberos": "^2.2.0",
+    "lint-staged": "^15.2.10",
+    "typescript": "^5.6.3",
+    "typescript-eslint": "^8.14.1-alpha.8",
+    "undici": "^6.21.0"
+  },
+  "scripts": {
+    "test": "playwright test --reporter=list",
+    "test:chrome": "playwright test --reporter=list --project=chrome",
+    "test:firefox": "playwright test --reporter=list --project=firefox",
+    "dev": "playwright test --ui",
+    "lint": "eslint . ",
+    "lint:fix": "eslint . --fix",
+    "type-check": "tsc --noEmit",
+    "postinstall": "husky"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "lint-staged": {
+    "*.ts": "eslint"
+  },
+  "dependencies": {}
+}

@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "allowJs": false,
+    "baseUrl": ".",
+    "strict": true,
+    "strictNullChecks": true,
+    "esModuleInterop": true,
+  },
+  "include": [
+    "tests/**/*.ts",
+    "pages/**/*.ts",
+    "playwright/**/*.ts",
+    "environment.d.ts"
+  ]
+}
