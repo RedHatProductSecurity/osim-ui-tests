@@ -23,6 +23,8 @@ export class FlawCreatePage {
   readonly descriptionBox: Locator;
   readonly reviewStatusBox: Locator;
   readonly selfAssingBtn: Locator;
+  readonly cvssCalculatorInput: Locator;
+  readonly cvssCalculator: Locator;
   constructor(public readonly page: Page) {
     this.id = faker.string.alphanumeric({ length: 5, casing: 'upper' });
 
@@ -41,6 +43,8 @@ export class FlawCreatePage {
     this.selfAssingBtn = page.getByRole('button', { name: 'Self Assign' });
     this.descriptionBox = page.locator('label').filter({ hasText: 'Description' });
     this.reviewStatusBox = page.locator('label').filter({ hasText: 'Description' });
+    this.cvssCalculatorInput = page.locator('label').filter({ hasText: 'RH CVSSv3' });
+    this.cvssCalculator = page.locator('.cvss-calculator');
 
     this.submitButton = page.getByRole('button', { name: 'Create New Flaw' });
   }
@@ -58,6 +62,18 @@ export class FlawCreatePage {
   async fillTextArea(locator: Locator, text: string) {
     await locator.click();
     await locator.getByRole('textbox').fill(text);
+  }
+
+  async fillCVSSCalculator() {
+    await this.cvssCalculatorInput.click();
+    for (const metric of ['Attack Vector', 'Attack Complexity', 'Privileges Required', 'User Interaction', 'Scope', 'Confidentiality', 'Integrity', 'Availability']) {
+      const scores = this.cvssCalculator.locator('div', { hasText: metric }).last().locator('button');
+      const scoreCount = await scores.count();
+      const score = faker.number.int({ min: 1, max: scoreCount - 1 });
+
+      await scores.nth(score).scrollIntoViewIfNeeded();
+      await scores.nth(score).click();
+    }
   }
 
   async fillSelect(locator: Locator, text: string) {
@@ -84,6 +100,7 @@ export class FlawCreatePage {
     await this.fillTextArea(this.mitigationBox, faker.hacker.phrase());
     await this.fillTextArea(this.descriptionBox, faker.hacker.phrase());
     await this.fillSelect(this.reviewStatusBox, 'REQUESTED');
+    await this.fillCVSSCalculator();
     await this.selfAssingBtn.click();
   }
 
