@@ -1,3 +1,4 @@
+import type { CommentType } from 'pages/flawEdit';
 import { FlawCreatePage, type FlawType } from '../pages/flawCreate';
 import { test, expect } from '../playwright/fixtures';
 
@@ -71,17 +72,30 @@ test.describe('flaw edition', () => {
     await page.goto(`/flaws/${flawId}`);
   });
 
-  test('can add a comment', async ({ page, flawEditPage }) => {
-    await flawEditPage.addPublicComment();
+  (['public', 'private', 'internal'] as const).forEach((type: CommentType) => {
+    test(`can add a ${type} comment`, async ({ page, flawEditPage }) => {
+      await flawEditPage.addComment(type);
 
-    await expect(page.getByText('Public comment saved.')).toBeVisible();
+      await expect(page.getByText(new RegExp(`${type} comment saved`, 'i'))).toBeVisible();
+    });
   });
 
   test('can change the title', async ({ page, flawEditPage }) => {
     const title = await flawEditPage.titleBox.locator('span', { hasNotText: 'Title' }).innerText();
-    await flawEditPage.fillTextBox(flawEditPage.titleBox, title + ' edited');
+    const newTitle = title + ' edited';
+
+    await flawEditPage.fillTextBox(flawEditPage.titleBox, newTitle);
     await flawEditPage.submitButton.click();
 
     await expect(page.getByText('Flaw saved')).toBeVisible();
+    await expect(page.getByText(newTitle)).toBeVisible();
+  });
+
+  test.describe('affects', () => {
+    test('can add an affect', async ({ page, flawEditPage }) => {
+      await flawEditPage.addAffect();
+      await flawEditPage.submitButton.click();
+      await expect(page.getByText('Affects Created.')).toBeVisible();
+    });
   });
 });
