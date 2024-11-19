@@ -24,7 +24,7 @@ setup('authenticate', async ({ baseURL }) => {
             value: JSON.stringify({
               jiraApiKey: process.env.JIRA_API_KEY,
               bugzillaApiKey: process.env.BUGZILLA_API_KEY,
-              showNotifications: false,
+              showNotifications: true,
               affectsPerPage: 10,
               trackersPerPage: 10,
             }),
