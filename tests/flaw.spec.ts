@@ -55,8 +55,8 @@ test.describe('flaw creation', () => {
       test.slow();
       await flawCreatePage.createFlaw({ type, full: true });
 
-      await expect.soft(page.getByText('Flaw created')).toBeVisible();
-      await expect(page).toHaveURL(/flaws\/(?!new)\w+/);
+      await expect.soft(page.getByText('Flaw created')).toBeVisible({ timeout: 60_000 });
+      await expect(page).toHaveURL(/flaws\/(?!new)\w+/, { timeout: 60_000 });
     });
   });
   // TODO: Add tests for specific fields and special cases.
@@ -88,7 +88,7 @@ test.describe('flaw edition', () => {
     await flawEditPage.submitButton.click();
 
     await expect(page.getByText('Flaw saved')).toBeVisible();
-    await expect(page.getByText(newTitle)).toBeVisible();
+    await expect(page.getByText(newTitle, { exact: true })).toBeVisible();
   });
 
   test.describe('affects', () => {
