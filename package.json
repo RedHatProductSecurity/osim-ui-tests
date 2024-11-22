@@ -6,8 +6,6 @@
   "private": true,
   "devDependencies": {
     "@faker-js/faker": "^9.2.0",
-    "@playwright/browser-chromium": "^1.48.2",
-    "@playwright/browser-firefox": "^1.48.2",
     "@playwright/test": "^1.48.2",
     "@stylistic/eslint-plugin": "^2.10.1",
     "@types/eslint__js": "^8.42.3",
@@ -26,9 +24,9 @@
     "undici": "^6.21.0"
   },
   "scripts": {
-    "test": "playwright test --reporter=list",
-    "test:chrome": "playwright test --reporter=list --project=chrome",
-    "test:firefox": "playwright test --reporter=list --project=firefox",
+    "test": "playwright test",
+    "test:chromium": "playwright test --project=chromium",
+    "test:firefox": "playwright test --project=firefox",
     "dev": "playwright test --ui",
     "lint": "eslint . ",
     "lint:fix": "eslint . --fix",

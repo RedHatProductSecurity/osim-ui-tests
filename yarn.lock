@@ -114,20 +114,6 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
-"@playwright/browser-chromium@^1.48.2":
-  version "1.48.2"
-  resolved "https://registry.yarnpkg.com/@playwright/browser-chromium/-/browser-chromium-1.48.2.tgz#7693eb46a4a5d5c7b1a5bf89b56b08b62c9963ab"
-  integrity sha512-TvYJ5PFaDPYNlKpvPSftBbPTnu75VdRKjoMjmkd7/P79rFIBD+v6K4wU8XR6PlAqqFdPcfLL5XXZnRwTRixbDQ==
-  dependencies:
-    playwright-core "1.48.2"
-
-"@playwright/browser-firefox@^1.48.2":
-  version "1.48.2"
-  resolved "https://registry.yarnpkg.com/@playwright/browser-firefox/-/browser-firefox-1.48.2.tgz#ebbb4ca4ee6f5200218a856c211184dfc0a164a3"
-  integrity sha512-Cf0ZvgOCmmyqNbFLC2KQyV6RdTxfmuUzASnVhA7unT9xV3zK0TGv5xJZH4ACRMMdYeZ/pSK3SWyewmjMEvSo3g==
-  dependencies:
-    playwright-core "1.48.2"
-
 "@playwright/test@^1.48.2":
   version "1.48.2"
   resolved "https://registry.yarnpkg.com/@playwright/test/-/test-1.48.2.tgz#87dd40633f980872283404c8142a65744d3f13d6"

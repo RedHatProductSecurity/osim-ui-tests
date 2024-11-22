@@ -36,7 +36,7 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
-  reporter: 'html',
+  reporter: process.env.CI ? [['dot'], ['junit', {outputFile: 'results.xml'}]] : 'list',
   use: {
     storageState: 'playwright/.auth/user.json',
     ignoreHTTPSErrors: true,
