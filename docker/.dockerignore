@@ -1,0 +1,12 @@
+.gitignore
+*.md
+.git
+.vscode
+.github
+.husky
+test-results
+playwright-report
+user.json
+Dockerfile
+node_modules
+.env
