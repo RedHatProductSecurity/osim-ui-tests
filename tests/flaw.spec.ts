@@ -72,12 +72,22 @@ test.describe('flaw edition', () => {
     await page.goto(`/flaws/${flawId}`);
   });
 
-  (['public', 'private', 'internal'] as const).forEach((type: CommentType) => {
+  (['public', 'private'] as const).forEach((type: CommentType) => {
     test(`can add a ${type} comment`, async ({ page, flawEditPage }) => {
       await flawEditPage.addComment(type);
 
       await expect(page.getByText(new RegExp(`${type} comment saved`, 'i'))).toBeVisible();
     });
+  });
+
+  test(`can add an internal comment`, async ({ page, flawEditPage }, testInfo) => {
+    // Extend the timeout to account for the time it may take for the Jira task to be created.
+    test.setTimeout(testInfo.timeout + 55_000);
+    await flawEditPage.waitForJiraTask(flawId);
+
+    await flawEditPage.addComment('internal');
+
+    await expect(page.getByText(new RegExp(`internal comment saved`, 'i'))).toBeVisible();
   });
 
   test('can change the title', async ({ page, flawEditPage }) => {

@@ -56,4 +56,29 @@ export async function saveStorage(storage: Optional<Storage, 'cookies'>): Promis
   await writeFile(`${storagePath}/user.json`, JSON.stringify(storage, null, 2));
 }
 
+export async function getFlawFromAPI<T extends string>(uuid: string, fields?: T[]): Promise<Record<T, unknown>> {
+  const { access } = await authenticate();
+
+  let url = `https://${process.env.OSIDB_URL}/osidb/api/v1/flaws/${uuid}`;
+  if (fields) {
+    url += '?' + new URLSearchParams({ include_fields: fields.join(',') }).toString();
+  }
+
+  const resp = await fetch(url, {
+    headers: {
+      Authorization: 'Bearer ' + access,
+    },
+    method: 'GET',
+  });
+
+  return (await resp.json() as Record<T, unknown>);
+}
+
+/**
+ * Sleep is discouraged in tests, don't use for UI interactions.
+ * https://playwright.dev/docs/api/class-page#page-wait-for-timeout
+ */
+export async function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
 export const { utc: dayjs } = dayjs_base;
