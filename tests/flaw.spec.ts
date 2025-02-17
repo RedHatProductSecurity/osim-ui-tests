@@ -90,6 +90,19 @@ test.describe('flaw edition', () => {
     await expect(page.getByText(new RegExp(`internal comment saved`, 'i'))).toBeVisible();
   });
 
+  test('jira link opens task in new page', async ({ flawEditPage, context }) => {
+    const jiraLink = flawEditPage.jiraLink;
+    await expect(jiraLink).toHaveAttribute('href', /issue/);
+
+    const [newPage] = await Promise.all([
+      context.waitForEvent('page'),
+      jiraLink.click(),
+    ]);
+
+    expect(newPage).toBeTruthy();
+    await newPage.close();
+  });
+
   test('can change the title', async ({ page, flawEditPage }) => {
     const title = await flawEditPage.titleBox.locator('span', { hasNotText: 'Title' }).innerText();
     const newTitle = title + ' edited';

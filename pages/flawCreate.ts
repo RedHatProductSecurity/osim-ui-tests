@@ -124,7 +124,7 @@ export class FlawCreatePage {
       components: ['e2e', flawId],
       title: 'Test flaw ' + flawId,
       classification: {
-        workflow: '',
+        workflow: 'DEFAULT',
         state: 'NEW',
       },
       comment_zero: faker.hacker.phrase(),
