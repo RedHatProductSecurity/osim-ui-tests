@@ -1,10 +1,13 @@
 import type { Locator, Page } from '@playwright/test';
 import { FlawCreatePage } from './flawCreate';
 import { faker } from '@faker-js/faker';
+import { getFlawFromAPI, sleep } from 'playwright/helpers';
 
 export type CommentType = 'public' | 'private' | 'internal';
 
 export class FlawEditPage extends FlawCreatePage {
+  readonly createJiraTaskButton: Locator;
+
   readonly publicCommentButton: Locator;
   readonly publicCommentTab: Locator;
   readonly publicCommentBox: Locator;
@@ -30,6 +33,8 @@ export class FlawEditPage extends FlawCreatePage {
 
   constructor(page: Page) {
     super(page);
+
+    this.createJiraTaskButton = this.page.getByRole('button', { name: 'Create Jira Task' });
 
     this.publicCommentTab = this.page.getByRole('button', { name: 'Public Comments', exact: true });
     this.publicCommentButton = this.page.getByRole('button', { name: 'Add Public Comment' });
@@ -103,5 +108,29 @@ export class FlawEditPage extends FlawCreatePage {
     await this.affectResolutionBox.selectOption('DEFER');
     await this.affectImpactBox.selectOption('LOW');
     await this.affectCommitButton.click();
+  }
+
+  /**
+   * Polls the API each second until the Jira task key is found.
+   * Each attempt waits for the number of seconds equal to the attempt number. (Triangular number)
+   * Maximum of 10 attempts or 55 seconds.
+   *
+   * @throws {Error} If the Jira task key is not found after 10 attempts.
+   */
+  async waitForJiraTask(uuid: string) {
+    // If the flaw already has a Jira task, there is no need to wait for it to be created.
+    if (!(await this.createJiraTaskButton.isVisible())) {
+      return;
+    }
+
+    for (let i = 0; i < 10; i++) {
+      const flaw = await getFlawFromAPI(uuid, ['task_key']);
+      if (flaw.task_key) {
+        await this.page.reload();
+        return;
+      }
+      await sleep(1_000 * (i + 1));
+    }
+    throw new Error('Jira link not found');
   }
 }
