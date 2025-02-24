@@ -7,6 +7,7 @@ export type CommentType = 'public' | 'private' | 'internal';
 
 export class FlawEditPage extends FlawCreatePage {
   readonly createJiraTaskButton: Locator;
+  readonly jiraLink: Locator;
 
   readonly publicCommentButton: Locator;
   readonly publicCommentTab: Locator;
@@ -35,6 +36,7 @@ export class FlawEditPage extends FlawCreatePage {
     super(page);
 
     this.createJiraTaskButton = this.page.getByRole('button', { name: 'Create Jira Task' });
+    this.jiraLink = this.page.getByRole('link', { name: ' Open in Jira' });
 
     this.publicCommentTab = this.page.getByRole('button', { name: 'Public Comments', exact: true });
     this.publicCommentButton = this.page.getByRole('button', { name: 'Add Public Comment' });
