@@ -27,6 +27,7 @@ setup('authenticate', async ({ baseURL }) => {
               showNotifications: true,
               affectsPerPage: 10,
               trackersPerPage: 10,
+              privacyNoticeShown: true,
             }),
           },
         ],
