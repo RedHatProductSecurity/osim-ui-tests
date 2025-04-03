@@ -55,8 +55,8 @@ export class FlawEditPage extends FlawCreatePage {
 
     this.addAffectButton = this.page.getByRole('button', { name: 'Add New Affect' });
     this.editAffectButton = this.page.getByTitle('Edit affect');
-    this.affectModuleBox = this.page.getByRole('cell', { name: 'NewModule' }).getByRole('textbox');
-    this.affectComponentBox = this.page.getByRole('cell', { name: 'NewComponent' }).getByRole('textbox');
+    this.affectModuleBox = this.page.getByRole('cell', { name: /Module\d+/ }).getByRole('textbox');
+    this.affectComponentBox = this.page.getByRole('cell', { name: /Component\d+/ }).getByRole('textbox');
     this.affectAffectednessBox = this.page.getByRole('cell', { name: 'NEW', exact: true }).getByRole('combobox');
     this.affectResolutionBox = this.page.locator('td').filter({ hasText: 'DEFER' }).getByRole('combobox');
     this.affectImpactBox = this.page.locator('td').filter({ hasText: 'LOW' }).getByRole('combobox');
@@ -101,7 +101,6 @@ export class FlawEditPage extends FlawCreatePage {
 
   async addAffect(module = 'rhel-8', component = 'kernel') {
     await this.addAffectButton.click();
-    await this.editAffectButton.click();
 
     await this.affectModuleBox.fill(module);
     await this.affectComponentBox.fill(component);
