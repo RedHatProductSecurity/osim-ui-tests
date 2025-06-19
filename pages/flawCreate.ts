@@ -43,7 +43,7 @@ export class FlawCreatePage {
     this.selfAssingBtn = page.getByRole('button', { name: 'Self Assign' });
     this.descriptionBox = page.locator('label').filter({ hasText: 'Description' });
     this.reviewStatusBox = page.locator('label').filter({ hasText: 'Description' });
-    this.cvssCalculatorInput = page.locator('label').filter({ hasText: 'RH CVSSv3' });
+    this.cvssCalculatorInput = page.locator('label').filter({ hasText: 'RH CVSS' });
     this.cvssCalculator = page.locator('.cvss-calculator');
 
     this.submitButton = page.getByRole('button', { name: 'Create New Flaw' });
