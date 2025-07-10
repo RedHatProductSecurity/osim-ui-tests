@@ -1,4 +1,4 @@
-FROM registry.redhat.io/ubi9/ubi:9.5 as base
+FROM registry.access.redhat.com/ubi9/ubi:9.5 as base
 
 ENV LANG=C.UTF-8
 ENV LC_ALL=C.UTF-8
