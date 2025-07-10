@@ -67,7 +67,7 @@ export class FlawCreatePage {
   async fillCVSSCalculator() {
     await this.cvssCalculatorInput.click();
     for (const metric of ['Attack Vector', 'Attack Complexity', 'Privileges Required', 'User Interaction', 'Scope', 'Confidentiality', 'Integrity', 'Availability']) {
-      const scores = this.cvssCalculator.locator('div', { hasText: metric }).last().locator('button');
+      const scores = this.cvssCalculator.locator('div', { hasText: metric }).last().locator('button').filter({ hasNotText: metric });
       const scoreCount = await scores.count();
       const score = faker.number.int({ min: 1, max: scoreCount - 1 });
 
@@ -95,7 +95,7 @@ export class FlawCreatePage {
 
   async fillOptional() {
     await this.fillTextBox(this.CVEBox, `CVE-${faker.number.int({ min: 2100, max: 2999 })}-${faker.number.int({ max: 9999 }).toString().padStart(4, '0')}`);
-    await this.fillSelect(this.incidentBox, 'MINOR');
+    await this.fillSelect(this.incidentBox, 'Minor Incident Approved');
     await this.fillTextArea(this.statementBox, faker.hacker.phrase());
     await this.fillTextArea(this.mitigationBox, faker.hacker.phrase());
     await this.fillTextArea(this.descriptionBox, faker.hacker.phrase());
@@ -120,7 +120,7 @@ export class FlawCreatePage {
 
     const flawId = faker.string.alphanumeric({ length: 5, casing: 'upper' });
     const flaw = {
-      impact: 'LOW',
+      impact: '',
       components: ['e2e', flawId],
       title: 'Test flaw ' + flawId,
       classification: {
