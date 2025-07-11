@@ -2,6 +2,7 @@
 This repository contains end-to-end tests for [OSIM](https://github.com/RedHatProductSecurity/osim) using [Playwright](https://playwright.dev/).
 
 ## Required environment variables
+> Note: Exclude protocol in the URLs
 
 - `OSIM_URL`: URL of the OSIM instance to test
 - `OSIDB_URL`: URL of the OSIDB instance to test
