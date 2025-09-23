@@ -23,7 +23,7 @@ interface JSONResponse {
 
 const storagePath = 'playwright/.auth/';
 
-export async function authenticate(): Promise<{ refresh: string; access: string }> {
+export async function authenticate(): Promise<{ refresh: string; access: string; cookies: string[] }> {
   const client = await initializeClient(`HTTP@${process.env.OSIDB_URL}`, {
     mechOID: GSS_MECH_OID_KRB5,
   });
@@ -38,7 +38,10 @@ export async function authenticate(): Promise<{ refresh: string; access: string 
 
   const { access, refresh } = await resp.json() as JSONResponse;
 
-  return { access, refresh };
+  // Extract cookies from response headers for non-dev environments
+  const cookies = resp.headers.getSetCookie();
+
+  return { access, refresh, cookies };
 }
 
 type Optional<T, K extends keyof T> = Pick<Partial<T>, K> & Omit<T, K>;
