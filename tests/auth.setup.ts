@@ -71,7 +71,7 @@ setup('authenticate', async ({ baseURL }) => {
           {
             name: 'OSIM::USER-SETTINGS',
             value: JSON.stringify({
-              showNotifications: false,
+              showNotifications: true,
               affectsPerPage: 10,
               trackersPerPage: 10,
               isHidingLabels: false,
