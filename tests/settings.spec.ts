@@ -22,6 +22,7 @@ test.use({
 
     const userSettings = JSON.parse(state.origins[0].localStorage[index].value) as UserSettings;
     userSettings.privacyNoticeShown = false;
+    userSettings.showNotifications = true;
     state.origins[0].localStorage[index].value = JSON.stringify(userSettings);
 
     await use(state);
@@ -40,8 +41,11 @@ test('load setting page', async ({ page }) => {
 });
 
 test('configure api keys', async ({ page }) => {
-  await page.getByLabel('Bugzilla API Key Please').fill(process.env.BUGZILLA_API_KEY);
-  await page.getByLabel('JIRA API Key Please').fill(process.env.JIRA_API_KEY);
+  await page.getByLabel('Bugzilla API Key').fill(process.env.BUGZILLA_API_KEY);
+  await page.getByLabel('JIRA API Key').fill(process.env.JIRA_API_KEY);
+
+  // Click the Save Settings button to persist the API keys
+  await page.getByRole('button', { name: 'Save Settings' }).click();
 
   await expect(page.getByRole('button', { name: 'Current User' })).toContainText(process.env.JIRA_USERNAME);
 });
