@@ -6,8 +6,10 @@ This repository contains end-to-end tests for [OSIM](https://github.com/RedHatPr
 - `OSIM_URL`: URL of the OSIM instance to test
 - `OSIDB_URL`: URL of the OSIDB instance to test
 - `JIRA_USERNAME`: Username of the authenticated user in JIRA
-- `JIRA_API_KEY`: API key for jira
-- `BUGZILLA_API_KEY`: API key for bugzilla
+- `JIRA_API_KEY`: API key for JIRA (used for API calls during test setup)
+- `BUGZILLA_API_KEY`: API key for Bugzilla (used for API calls during test setup)
+
+**Note**: API keys are used for backend API calls during test setup and flaw creation. They are not stored in browser localStorage during tests, as the main OSIM application now stores API keys securely on the backend.
 
 The project uses [dotenv](https://www.npmjs.com/package/dotenv) to load the environment variables from a `.env` file.
 

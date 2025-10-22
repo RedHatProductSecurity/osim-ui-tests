@@ -2,15 +2,18 @@ import { test, expect } from '@playwright/test';
 import { loadStorage } from 'playwright/helpers';
 
 interface UserSettings {
-  jiraApiKey?: string;
-  bugzillaApiKey?: string;
   showNotifications: boolean;
   affectsPerPage: number;
   trackersPerPage: number;
+  isHidingLabels: boolean;
   privacyNoticeShown: boolean;
+  aiUsageNoticeShown: boolean;
+  unifiedCommentsView: boolean;
+  affectsColumnWidths: number[];
+  trackersColumnWidths: number[];
 }
 
-// Remove API keys and disable privacy notice shown flag
+// Disable privacy notice shown flag for testing
 test.use({
   // eslint-disable-next-line no-empty-pattern
   storageState: async ({ }, use) => {
@@ -18,9 +21,8 @@ test.use({
     const index = state.origins[0].localStorage.findIndex(item => item.name === 'OSIM::USER-SETTINGS');
 
     const userSettings = JSON.parse(state.origins[0].localStorage[index].value) as UserSettings;
-    userSettings.jiraApiKey = undefined;
-    userSettings.bugzillaApiKey = undefined;
     userSettings.privacyNoticeShown = false;
+    userSettings.showNotifications = true;
     state.origins[0].localStorage[index].value = JSON.stringify(userSettings);
 
     await use(state);
@@ -39,8 +41,11 @@ test('load setting page', async ({ page }) => {
 });
 
 test('configure api keys', async ({ page }) => {
-  await page.getByLabel('Bugzilla API Key Please').fill(process.env.BUGZILLA_API_KEY);
-  await page.getByLabel('JIRA API Key Please').fill(process.env.JIRA_API_KEY);
+  await page.getByLabel('Bugzilla API Key').fill(process.env.BUGZILLA_API_KEY);
+  await page.getByLabel('JIRA API Key').fill(process.env.JIRA_API_KEY);
+
+  // Click the Save Settings button to persist the API keys
+  await page.getByRole('button', { name: 'Save Settings' }).click();
 
   await expect(page.getByRole('button', { name: 'Current User' })).toContainText(process.env.JIRA_USERNAME);
 });
