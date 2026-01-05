@@ -32,6 +32,11 @@ export class FlawEditPage extends FlawCreatePage {
   readonly affectImpactBox: Locator;
   readonly affectCommitButton: Locator;
 
+  // Optional field locators
+  readonly cweBox: Locator;
+  readonly reportedDateBox: Locator;
+  readonly unassignButton: Locator;
+
   constructor(page: Page) {
     super(page);
 
@@ -63,6 +68,11 @@ export class FlawEditPage extends FlawCreatePage {
     this.affectImpactBox = this.page.locator('tbody tr.new td').nth(5); // Impact column
     this.affectCommitButton = this.page.getByTitle('Commit edit');
     this.submitButton = page.getByRole('button', { name: 'Save Changes', exact: true });
+
+    // Optional fields
+    this.cweBox = page.locator('label').filter({ hasText: 'CWE ID' });
+    this.reportedDateBox = page.locator('label').filter({ hasText: 'Reported Date' });
+    this.unassignButton = page.getByRole('button', { name: 'Unassign' });
   }
 
   private async addPublicComment() {
@@ -164,9 +174,9 @@ export class FlawEditPage extends FlawCreatePage {
   /**
    * Polls the API each second until the Jira task key is found.
    * Each attempt waits for the number of seconds equal to the attempt number. (Triangular number)
-   * Maximum of 10 attempts or 55 seconds.
+   * Maximum of 15 attempts or 120 seconds.
    *
-   * @throws {Error} If the Jira task key is not found after 10 attempts.
+   * @throws {Error} If the Jira task key is not found after 15 attempts.
    */
   async waitForJiraTask(uuid: string) {
     // If the flaw already has a Jira task, there is no need to wait for it to be created.
@@ -174,7 +184,7 @@ export class FlawEditPage extends FlawCreatePage {
       return;
     }
 
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 15; i++) {
       const flaw = await getFlawFromAPI(uuid, ['task_key']);
       if (flaw.task_key) {
         await this.page.reload();
@@ -183,5 +193,25 @@ export class FlawEditPage extends FlawCreatePage {
       await sleep(1_000 * (i + 1));
     }
     throw new Error('Jira link not found');
+  }
+
+  async fillCweId(cweId: string) {
+    await this.fillTextBox(this.cweBox, cweId);
+  }
+
+  async fillReportedDate(date: string) {
+    await this.fillTextBox(this.reportedDateBox, date);
+  }
+
+  async selfAssign() {
+    if (await this.selfAssingBtn.isVisible()) {
+      await this.selfAssingBtn.click();
+    }
+  }
+
+  async unassign() {
+    if (await this.unassignButton.isVisible()) {
+      await this.unassignButton.click();
+    }
   }
 }
