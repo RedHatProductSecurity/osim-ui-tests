@@ -81,6 +81,7 @@ setup('authenticate', async ({ baseURL }) => {
       {
         origin: baseURL ?? `${osimProtocol}://${osimUrl}`,
         localStorage: [
+          // AuthStore keys (new format)
           {
             name: 'AuthStore::isLoggedIn',
             value: 'true',
@@ -89,6 +90,7 @@ setup('authenticate', async ({ baseURL }) => {
             name: 'AuthStore::refresh',
             value: refresh,
           },
+          // UserStore for user info
           {
             name: 'UserStore',
             value: JSON.stringify({
