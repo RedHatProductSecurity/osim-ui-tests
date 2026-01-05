@@ -17,7 +17,7 @@ test.describe('flaw acknowledgements', () => {
     await page.getByLabel('Name').fill('John Doe');
     await page.getByLabel('Affiliation').fill('Security Research Inc.');
     await page.getByRole('button', { name: 'Save Changes to Acknowledgments' }).click();
-    await expect(page.getByText('Acknowledgment created.')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText('Acknowledgment created.').first()).toBeVisible({ timeout: 10000 });
 
     // Work around OSIM bug where acknowledgments remain in edit mode
     await page.reload();
@@ -29,7 +29,7 @@ test.describe('flaw acknowledgements', () => {
     await page.getByLabel('Name').fill('Jane Smith');
     await page.getByLabel('Affiliation').fill('Original Company');
     await page.getByRole('button', { name: 'Save Changes to Acknowledgments' }).click();
-    await expect(page.getByText('Acknowledgment created.')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText('Acknowledgment created.').first()).toBeVisible({ timeout: 10000 });
 
     // Work around OSIM bug where acknowledgments remain in edit mode
     await page.reload();
@@ -62,7 +62,7 @@ test.describe('flaw acknowledgements', () => {
     await page.getByLabel('Name').fill('Delete Me');
     await page.getByLabel('Affiliation').fill('Temporary Corp');
     await page.getByRole('button', { name: 'Save Changes to Acknowledgments' }).click();
-    await expect(page.getByText('Acknowledgment created.')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText('Acknowledgment created.').first()).toBeVisible({ timeout: 10000 });
 
     // Work around OSIM bug where acknowledgments remain in edit mode
     await page.reload();
@@ -85,7 +85,7 @@ test.describe('flaw acknowledgements', () => {
     await page.getByLabel('Name').fill('Keep This Person');
     await page.getByLabel('Affiliation').fill('Permanent Company');
     await page.getByRole('button', { name: 'Save Changes to Acknowledgments' }).click();
-    await expect(page.getByText('Acknowledgment created.')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText('Acknowledgment created.').first()).toBeVisible({ timeout: 10000 });
 
     // Work around OSIM bug where acknowledgments remain in edit mode
     await page.reload();
@@ -124,7 +124,7 @@ test.describe('flaw acknowledgements', () => {
       await page.getByLabel('Name').fill(name);
       await page.getByLabel('Affiliation').fill(affiliation);
       await page.getByRole('button', { name: 'Save Changes to Acknowledgments' }).click();
-      await expect(page.getByText('Acknowledgment created.')).toBeVisible({ timeout: 10000 });
+      await expect(page.getByText('Acknowledgment created.').first()).toBeVisible({ timeout: 10000 });
 
       // Refresh page to work around OSIM bug where acknowledgments remain in edit mode
       await page.reload();
@@ -143,7 +143,7 @@ test.describe('flaw acknowledgements', () => {
     await page.getByLabel('Name').fill('UUID Test Person');
     await page.getByLabel('Affiliation').fill('UUID Test Corp');
     await page.getByRole('button', { name: 'Save Changes to Acknowledgments' }).click();
-    await expect(page.getByText('Acknowledgment created.')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText('Acknowledgment created.').first()).toBeVisible({ timeout: 10000 });
 
     // Work around OSIM bug where acknowledgments remain in edit mode
     await page.reload();
@@ -163,7 +163,7 @@ test.describe('flaw acknowledgements', () => {
     await page.getByLabel('Name').fill(testData.name);
     await page.getByLabel('Affiliation').fill(testData.affiliation);
     await page.getByRole('button', { name: 'Save Changes to Acknowledgments' }).click();
-    await expect(page.getByText('Acknowledgment created.')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText('Acknowledgment created.').first()).toBeVisible({ timeout: 10000 });
 
     // Work around OSIM bug where acknowledgments remain in edit mode
     await page.reload();
