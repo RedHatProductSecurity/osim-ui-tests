@@ -53,6 +53,8 @@ export class FlawCreatePage {
     // Go to index first to let the app fully initialize
     await this.page.goto('/');
     await this.page.waitForSelector('text=Loaded', { timeout: 30000 });
+    // Wait for API keys to be loaded from backend (async operation)
+    await this.page.waitForTimeout(2000);
 
     // Navigate via UI click instead of direct URL to avoid guard timing issues
     await this.page.getByRole('link', { name: 'Create Flaw' }).click();
@@ -140,7 +142,7 @@ export class FlawCreatePage {
     await this.submitButton.click();
   }
 
-  static async createFlawWithAPI(options: { embargoed?: boolean } = {}): Promise<string> {
+  static async createFlawWithAPI(options: { embargoed?: boolean; major_incident_state?: string } = {}): Promise<string> {
     const { access } = await authenticate();
     const { embargoed = false } = options;
 
