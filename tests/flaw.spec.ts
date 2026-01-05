@@ -85,7 +85,7 @@ test.describe('flaw edition', () => {
   (['public', 'private'] as const).forEach((type: CommentType) => {
     test(`can add a ${type} comment`, async ({ page, flawEditPage }) => {
       await flawEditPage.addComment(type);
-      await expect(page.getByText(new RegExp(`${type} comment saved`, 'i'))).toBeVisible();
+      await expect(page.getByText(new RegExp(`${type} comment saved`, 'i')).first()).toBeVisible();
     });
   });
 
@@ -94,7 +94,7 @@ test.describe('flaw edition', () => {
     test.skip(!!process.env.CI, 'Internal comments require real Jira integration');
 
     await flawEditPage.addComment('internal');
-    await expect(page.getByText(new RegExp(`internal comment saved`, 'i'))).toBeVisible();
+    await expect(page.getByText(new RegExp(`internal comment saved`, 'i')).first()).toBeVisible();
   });
 
   test('jira link opens task in new page', async ({ flawEditPage, context }) => {
@@ -113,13 +113,13 @@ test.describe('flaw edition', () => {
   });
 
   test('can change the title', async ({ page, flawEditPage }) => {
-    const title = await flawEditPage.titleBox.locator('span', { hasNotText: 'Title' }).innerText();
+    const title = await flawEditPage.titleBox.locator('.osim-editable-text-value').innerText();
     const newTitle = title + ' edited';
 
     await flawEditPage.fillTextBox(flawEditPage.titleBox, newTitle);
     await flawEditPage.submitButton.click();
 
-    await expect(page.getByText('Flaw saved')).toBeVisible();
+    await expect(page.getByText('Flaw saved').first()).toBeVisible();
     await expect(page.getByText(newTitle, { exact: true })).toBeVisible();
   });
 
@@ -127,7 +127,7 @@ test.describe('flaw edition', () => {
     test('can add an affect', async ({ page, flawEditPage }) => {
       await flawEditPage.addAffect();
       await flawEditPage.submitButton.click();
-      await expect(page.getByText(/\d+ affects? created/i)).toBeVisible();
+      await expect(page.getByText(/\d+ affects? created/i).first()).toBeVisible();
     });
   });
 });
