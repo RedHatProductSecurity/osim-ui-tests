@@ -81,7 +81,6 @@ setup('authenticate', async ({ baseURL }) => {
       {
         origin: baseURL ?? `${osimProtocol}://${osimUrl}`,
         localStorage: [
-          // AuthStore keys (new format)
           {
             name: 'AuthStore::isLoggedIn',
             value: 'true',
