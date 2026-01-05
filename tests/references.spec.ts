@@ -18,7 +18,7 @@ test.describe('flaw references', () => {
     await page.locator('.osim-cancel-new-reference').locator('..').getByLabel('Description').fill('Test security advisory reference');
     await page.getByLabel('Reference type').selectOption('EXTERNAL');
     await page.getByRole('button', { name: 'Save Changes to References' }).click();
-    await expect(page.getByText('Reference created.')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText('Reference created.').first()).toBeVisible({ timeout: 10000 });
   });
 
   test('can edit an existing reference', async ({ page }) => {
@@ -27,7 +27,7 @@ test.describe('flaw references', () => {
     await page.locator('.osim-cancel-new-reference').locator('..').getByLabel('Description').fill('Original description');
     await page.getByLabel('Reference type').selectOption('UPSTREAM');
     await page.getByRole('button', { name: 'Save Changes to References' }).click();
-    await expect(page.getByText('Reference created.')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText('Reference created.').first()).toBeVisible({ timeout: 10000 });
 
     // Work around OSIM bug where references remain in edit mode
     await page.reload();
@@ -60,7 +60,7 @@ test.describe('flaw references', () => {
     await page.locator('.osim-cancel-new-reference').locator('..').getByLabel('Description').fill('Reference to be deleted');
     await page.getByLabel('Reference type').selectOption('EXTERNAL');
     await page.getByRole('button', { name: 'Save Changes to References' }).click();
-    await expect(page.getByText('Reference created.')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText('Reference created.').first()).toBeVisible({ timeout: 10000 });
 
     // Work around OSIM bug where references remain in edit mode
     await page.reload();
@@ -85,7 +85,7 @@ test.describe('flaw references', () => {
     await page.locator('.osim-cancel-new-reference').locator('..').getByLabel('Description').fill('Reference to keep');
     await page.getByLabel('Reference type').selectOption('UPSTREAM');
     await page.getByRole('button', { name: 'Save Changes to References' }).click();
-    await expect(page.getByText('Reference created.')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText('Reference created.').first()).toBeVisible({ timeout: 10000 });
 
     // Work around OSIM bug where references remain in edit mode
     await page.reload();
@@ -113,7 +113,7 @@ test.describe('flaw references', () => {
     await page.getByLabel('Reference type').selectOption('EXTERNAL');
     await page.getByRole('button', { name: 'Save Changes to References' }).click();
 
-    await expect(page.getByText('Reference created.')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText('Reference created.').first()).toBeVisible({ timeout: 10000 });
 
     // Work around OSIM bug where references remain in edit mode
     await page.reload();
@@ -141,7 +141,7 @@ test.describe('flaw references', () => {
       await page.locator('.osim-cancel-new-reference').locator('..').getByLabel('Description').fill(`${type} reference`);
       await page.getByLabel('Reference type').selectOption(type);
       await page.getByRole('button', { name: 'Save Changes to References' }).click();
-      await expect(page.getByText('Reference created.')).toBeVisible({ timeout: 10000 });
+      await expect(page.getByText('Reference created.').first()).toBeVisible({ timeout: 10000 });
 
       // Work around OSIM bug where references remain in edit mode
       await page.reload();
