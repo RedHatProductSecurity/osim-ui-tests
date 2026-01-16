@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import { faker } from '@faker-js/faker';
-import { authenticate, dayjs } from '../playwright/helpers';
+import { authenticate, dayjs, osidbBaseUrl } from '../playwright/helpers';
 
 export type FlawType = 'embargoed' | 'public';
 
@@ -134,7 +134,7 @@ export class FlawCreatePage {
       reported_dt: dayjs().utc().format('YYYY-MM-DDTHH:mm:ss.SSS[Z]'),
     };
 
-    const resp = await fetch(`https://${process.env.OSIDB_URL}/osidb/api/v1/flaws`, {
+    const resp = await fetch(`${osidbBaseUrl()}/osidb/api/v1/flaws`, {
       headers: {
         'Authorization': 'Bearer ' + access,
         'bugzilla-api-key': process.env.BUGZILLA_API_KEY,
