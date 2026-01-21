@@ -1,5 +1,4 @@
 import { Agent, setGlobalDispatcher } from 'undici';
-import { GSS_MECH_OID_KRB5, initializeClient } from 'kerberos';
 import { type BrowserContextOptions } from '@playwright/test';
 import { readFile, writeFile, mkdir } from 'fs/promises';
 import dayjs_base from 'dayjs';
@@ -23,13 +22,21 @@ interface JSONResponse {
 
 const storagePath = 'playwright/.auth/';
 
-export async function authenticate(): Promise<{ refresh: string; access: string; cookies: string[] }> {
+// Use http for localhost (CI), https otherwise
+const osidbBaseUrl = () => {
+  const host = process.env.OSIDB_URL || '';
+  const protocol = host.startsWith('localhost') || host.startsWith('127.0.0.1') ? 'http' : 'https';
+  return `${protocol}://${host}`;
+};
+
+async function authenticateWithKerberos(): Promise<{ access: string; refresh: string; cookies: string[] }> {
+  const { GSS_MECH_OID_KRB5, initializeClient } = await import('kerberos');
   const client = await initializeClient(`HTTP@${process.env.OSIDB_URL}`, {
     mechOID: GSS_MECH_OID_KRB5,
   });
   const ticket = await client.step('');
 
-  const resp = await fetch(`https://${process.env.OSIDB_URL}/auth/token`, {
+  const resp = await fetch(`${osidbBaseUrl()}/auth/token`, {
     headers: {
       Authorization: `Negotiate ${ticket}`,
     },
@@ -37,11 +44,39 @@ export async function authenticate(): Promise<{ refresh: string; access: string;
   });
 
   const { access, refresh } = await resp.json() as JSONResponse;
-
-  // Extract cookies from response headers for non-dev environments
   const cookies = resp.headers.getSetCookie();
 
   return { access, refresh, cookies };
+}
+
+async function authenticateWithCredentials(): Promise<{ access: string; refresh: string; cookies: string[] }> {
+  const resp = await fetch(`${osidbBaseUrl()}/auth/token`, {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    method: 'POST',
+    body: JSON.stringify({
+      username: process.env.OSIM_USERNAME,
+      password: process.env.OSIM_PASSWORD,
+    }),
+  });
+
+  if (!resp.ok) {
+    throw new Error(`Authentication failed: ${resp.status} ${resp.statusText}`);
+  }
+
+  const { access, refresh } = await resp.json() as JSONResponse;
+  const cookies = resp.headers.getSetCookie();
+
+  return { access, refresh, cookies };
+}
+
+export async function authenticate(): Promise<{ refresh: string; access: string; cookies: string[] }> {
+  // Use credentials auth if username/password are provided, otherwise fall back to Kerberos
+  if (process.env.OSIM_USERNAME && process.env.OSIM_PASSWORD) {
+    return authenticateWithCredentials();
+  }
+  return authenticateWithKerberos();
 }
 
 type Optional<T, K extends keyof T> = Pick<Partial<T>, K> & Omit<T, K>;
@@ -62,7 +97,7 @@ export async function saveStorage(storage: Optional<Storage, 'cookies'>): Promis
 export async function getFlawFromAPI<T extends string>(uuid: string, fields?: T[]): Promise<Record<T, unknown>> {
   const { access } = await authenticate();
 
-  let url = `https://${process.env.OSIDB_URL}/osidb/api/v1/flaws/${uuid}`;
+  let url = `${osidbBaseUrl()}/osidb/api/v1/flaws/${uuid}`;
   if (fields) {
     url += '?' + new URLSearchParams({ include_fields: fields.join(',') }).toString();
   }
