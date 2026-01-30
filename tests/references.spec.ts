@@ -29,9 +29,9 @@ test.describe('flaw references', () => {
     await page.getByRole('button', { name: 'Save Changes to References' }).click();
     await expect(page.getByText('Reference created.')).toBeVisible({ timeout: 10000 });
 
-    // Uncomment lines below to work around OSIM bug where references remain in edit mode
-    // await page.reload();
-    // await page.getByText(/References: \d+/).click();
+    // Work around OSIM bug where references remain in edit mode
+    await page.reload();
+    await page.getByText(/References: \d+/).click();
     await expect(page.getByText('https://original.com/advisory')).toBeVisible({ timeout: 10000 });
 
     await page.getByRole('button', { name: /Edit Reference/i }).first().click();
@@ -62,9 +62,9 @@ test.describe('flaw references', () => {
     await page.getByRole('button', { name: 'Save Changes to References' }).click();
     await expect(page.getByText('Reference created.')).toBeVisible({ timeout: 10000 });
 
-    // Uncomment lines below to work around OSIM bug where references remain in edit mode
-    // await page.reload();
-    // await page.getByText(/References: \d+/).click();
+    // Work around OSIM bug where references remain in edit mode
+    await page.reload();
+    await page.getByText(/References: \d+/).click();
     await expect(page.getByText('https://todelete.com/advisory')).toBeVisible({ timeout: 10000 });
 
     await page.getByRole('button', { name: /Delete Reference/i }).first().click();
@@ -72,8 +72,8 @@ test.describe('flaw references', () => {
     await expect(page.getByText('Are you sure you want to delete this reference?')).toBeVisible();
     await page.getByRole('button', { name: 'Confirm' }).click();
 
-    // Uncomment line below to work around OSIM bug with delete reactivity
-    // await page.reload();
+    // Work around OSIM bug with delete reactivity
+    await page.reload();
 
     await expect(page.getByText('https://todelete.com/advisory')).not.toBeVisible();
     await expect(page.getByText('Reference to be deleted')).not.toBeVisible();
@@ -87,9 +87,9 @@ test.describe('flaw references', () => {
     await page.getByRole('button', { name: 'Save Changes to References' }).click();
     await expect(page.getByText('Reference created.')).toBeVisible({ timeout: 10000 });
 
-    // Uncomment lines below to work around OSIM bug where references remain in edit mode
-    // await page.reload();
-    // await page.getByText(/References: \d+/).click();
+    // Work around OSIM bug where references remain in edit mode
+    await page.reload();
+    await page.getByText(/References: \d+/).click();
     await expect(page.getByText('https://keepthis.com/advisory')).toBeVisible({ timeout: 10000 });
 
     await page.getByRole('button', { name: /Delete Reference/i }).first().click();
@@ -115,9 +115,9 @@ test.describe('flaw references', () => {
 
     await expect(page.getByText('Reference created.')).toBeVisible({ timeout: 10000 });
 
-    // Uncomment lines below to work around OSIM bug where references remain in edit mode
-    // await page.reload();
-    // await page.getByText(/References: \d+/).click();
+    // Work around OSIM bug where references remain in edit mode
+    await page.reload();
+    await page.getByText(/References: \d+/).click();
 
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
@@ -143,9 +143,9 @@ test.describe('flaw references', () => {
       await page.getByRole('button', { name: 'Save Changes to References' }).click();
       await expect(page.getByText('Reference created.')).toBeVisible({ timeout: 10000 });
 
-      // Uncomment lines below to work around OSIM bug where references remain in edit mode
-      // await page.reload();
-      // await page.getByText(/References: \d+/).click();
+      // Work around OSIM bug where references remain in edit mode
+      await page.reload();
+      await page.getByText(/References: \d+/).click();
       await expect(page.locator('.badge.rounded-pill').getByText(label)).toBeVisible();
     }
   });

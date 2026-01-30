@@ -4,6 +4,10 @@ import path from 'path';
 
 dotenv.config({ path: path.resolve(__dirname, '.env') });
 
+// Determine protocol based on host - localhost uses HTTP, others use HTTPS
+const osimUrl = process.env.OSIM_URL || '';
+const osimProtocol = osimUrl.startsWith('localhost') || osimUrl.startsWith('127.0.0.1') ? 'http' : 'https';
+
 const browsers: Project[] = [
   {
     name: 'firefox',
@@ -36,12 +40,12 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
-  reporter: process.env.CI ? [['dot'], ['junit', {outputFile: 'results.xml'}]] : 'list',
+  reporter: process.env.CI ? [['list'], ['junit', {outputFile: 'results.xml'}]] : 'list',
   use: {
     storageState: 'playwright/.auth/user.json',
     ignoreHTTPSErrors: true,
     trace: 'on-first-retry',
-    baseURL: `https://${process.env.OSIM_URL}`,
+    baseURL: `${osimProtocol}://${osimUrl}`,
   },
   timeout: 60000,
   expect: {

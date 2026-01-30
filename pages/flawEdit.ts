@@ -32,6 +32,11 @@ export class FlawEditPage extends FlawCreatePage {
   readonly affectImpactBox: Locator;
   readonly affectCommitButton: Locator;
 
+  // Optional field locators
+  readonly cweBox: Locator;
+  readonly reportedDateBox: Locator;
+  readonly unassignButton: Locator;
+
   constructor(page: Page) {
     super(page);
 
@@ -53,15 +58,21 @@ export class FlawEditPage extends FlawCreatePage {
     this.internalCommentBox = this.page.locator('label').filter({ hasText: 'New Internal Comment' });
     this.saveInternalCommentBox = this.page.getByRole('button', { name: 'Save Internal Comment' });
 
-    this.addAffectButton = this.page.getByRole('button', { name: 'Add New Affect' });
+    // New TanStack-based Affects table (uses double-click to edit cells)
+    this.addAffectButton = this.page.getByTitle('Add new affect');
     this.editAffectButton = this.page.getByTitle('Edit affect');
-    this.affectModuleBox = this.page.getByRole('cell', { name: /Module\d+/ }).getByRole('textbox');
-    this.affectComponentBox = this.page.getByRole('cell', { name: /Component\d+/ }).getByRole('textbox');
-    this.affectAffectednessBox = this.page.getByRole('cell', { name: 'NEW', exact: true }).getByRole('combobox');
-    this.affectResolutionBox = this.page.locator('td').filter({ hasText: 'DEFER' }).getByRole('combobox');
-    this.affectImpactBox = this.page.locator('td').filter({ hasText: 'LOW' }).getByRole('combobox');
+    this.affectModuleBox = this.page.locator('tbody tr.new td').nth(1); // Module column
+    this.affectComponentBox = this.page.locator('tbody tr.new td').nth(2); // Component column
+    this.affectAffectednessBox = this.page.locator('tbody tr.new td').nth(3); // Affectedness column
+    this.affectResolutionBox = this.page.locator('tbody tr.new td').nth(4); // Resolution column
+    this.affectImpactBox = this.page.locator('tbody tr.new td').nth(5); // Impact column
     this.affectCommitButton = this.page.getByTitle('Commit edit');
     this.submitButton = page.getByRole('button', { name: 'Save Changes', exact: true });
+
+    // Optional fields
+    this.cweBox = page.locator('label').filter({ hasText: 'CWE ID' });
+    this.reportedDateBox = page.locator('label').filter({ hasText: 'Reported Date' });
+    this.unassignButton = page.getByRole('button', { name: 'Unassign' });
   }
 
   private async addPublicComment() {
@@ -99,24 +110,73 @@ export class FlawEditPage extends FlawCreatePage {
     }
   }
 
-  async addAffect(module = 'rhel-8', component = 'kernel') {
+  async addAffect(stream = 'rhel-8.10.0', module = 'rhel-8', component = 'kernel') {
     await this.addAffectButton.click();
 
-    await this.affectModuleBox.fill(module);
-    await this.affectComponentBox.fill(component);
+    // New row appears - double-click cells to edit (TanStack table)
+    const newRow = this.page.locator('tbody tr.new').first();
+    await newRow.waitFor({ state: 'visible' });
 
-    await this.affectAffectednessBox.selectOption('AFFECTED');
-    await this.affectResolutionBox.selectOption('DEFER');
-    await this.affectImpactBox.selectOption('LOW');
-    await this.affectCommitButton.click();
+    // Helper to get column index by header text
+    const getColumnIndex = async (headerText: string) => {
+      const headers = this.page.locator('thead th');
+      const count = await headers.count();
+      for (let i = 0; i < count; i++) {
+        const text = await headers.nth(i).textContent();
+        if (text?.includes(headerText)) return i;
+      }
+      throw new Error(`Column "${headerText}" not found`);
+    };
+
+    // Edit Product Stream cell (required field)
+    const streamIdx = await getColumnIndex('Product Stream');
+    const streamCell = newRow.locator('td').nth(streamIdx);
+    await streamCell.dblclick();
+    await streamCell.locator('input').fill(stream);
+    await streamCell.locator('input').press('Enter');
+
+    // Edit Module cell (double-click to enter edit mode)
+    const moduleIdx = await getColumnIndex('Module');
+    const moduleCell = newRow.locator('td').nth(moduleIdx);
+    await moduleCell.dblclick();
+    await moduleCell.locator('input').fill(module);
+    await moduleCell.locator('input').press('Enter');
+
+    // Edit Component cell
+    const componentIdx = await getColumnIndex('Component');
+    const componentCell = newRow.locator('td').nth(componentIdx);
+    await componentCell.dblclick();
+    await componentCell.locator('input').fill(component);
+    await componentCell.locator('input').press('Enter');
+
+    // Edit Affectedness cell (dropdown)
+    const affectednessIdx = await getColumnIndex('Affectedness');
+    const affectednessCell = newRow.locator('td').nth(affectednessIdx);
+    await affectednessCell.dblclick();
+    await affectednessCell.locator('select').selectOption('AFFECTED');
+    await affectednessCell.locator('select').blur();
+
+    // Edit Resolution cell (dropdown)
+    const resolutionIdx = await getColumnIndex('Resolution');
+    const resolutionCell = newRow.locator('td').nth(resolutionIdx);
+    await resolutionCell.dblclick();
+    await resolutionCell.locator('select').selectOption('DELEGATED');
+    await resolutionCell.locator('select').blur();
+
+    // Edit Impact cell (dropdown)
+    const impactIdx = await getColumnIndex('Impact');
+    const impactCell = newRow.locator('td').nth(impactIdx);
+    await impactCell.dblclick();
+    await impactCell.locator('select').selectOption('LOW');
+    await impactCell.locator('select').blur();
   }
 
   /**
    * Polls the API each second until the Jira task key is found.
    * Each attempt waits for the number of seconds equal to the attempt number. (Triangular number)
-   * Maximum of 10 attempts or 55 seconds.
+   * Maximum of 15 attempts or 120 seconds.
    *
-   * @throws {Error} If the Jira task key is not found after 10 attempts.
+   * @throws {Error} If the Jira task key is not found after 15 attempts.
    */
   async waitForJiraTask(uuid: string) {
     // If the flaw already has a Jira task, there is no need to wait for it to be created.
@@ -124,7 +184,7 @@ export class FlawEditPage extends FlawCreatePage {
       return;
     }
 
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 15; i++) {
       const flaw = await getFlawFromAPI(uuid, ['task_key']);
       if (flaw.task_key) {
         await this.page.reload();
@@ -133,5 +193,25 @@ export class FlawEditPage extends FlawCreatePage {
       await sleep(1_000 * (i + 1));
     }
     throw new Error('Jira link not found');
+  }
+
+  async fillCweId(cweId: string) {
+    await this.fillTextBox(this.cweBox, cweId);
+  }
+
+  async fillReportedDate(date: string) {
+    await this.fillTextBox(this.reportedDateBox, date);
+  }
+
+  async selfAssign() {
+    if (await this.selfAssingBtn.isVisible()) {
+      await this.selfAssingBtn.click();
+    }
+  }
+
+  async unassign() {
+    if (await this.unassignButton.isVisible()) {
+      await this.unassignButton.click();
+    }
   }
 }
