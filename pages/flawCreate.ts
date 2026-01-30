@@ -28,8 +28,8 @@ export class FlawCreatePage {
   constructor(public readonly page: Page) {
     this.id = faker.string.alphanumeric({ length: 5, casing: 'upper' });
 
-    this.titleBox = page.locator('label').filter({ hasText: 'Title' });
-    this.componentsBox = page.locator('label').filter({ hasText: 'Components' });
+    this.titleBox = page.locator('.osim-input').filter({ hasText: 'Title' });
+    this.componentsBox = page.locator('label').filter({ hasText: 'Source Component' });
     this.impactBox = page.locator('label').filter({ hasText: 'Impact' });
     this.sourceBox = page.locator('label').filter({ hasText: 'CVE Source' });
     this.comment0Box = page.locator('label').filter({ hasText: 'Comment#0' });
@@ -43,7 +43,7 @@ export class FlawCreatePage {
     this.selfAssingBtn = page.getByRole('button', { name: 'Self Assign' });
     this.descriptionBox = page.locator('label').filter({ hasText: 'Description' });
     this.reviewStatusBox = page.locator('label').filter({ hasText: 'Description' });
-    this.cvssCalculatorInput = page.locator('label').filter({ hasText: 'RH CVSS' });
+    this.cvssCalculatorInput = page.locator('label[role="red-hat-cvss"]');
     this.cvssCalculator = page.locator('.cvss-calculator');
 
     this.submitButton = page.getByRole('button', { name: 'Create New Flaw' });
