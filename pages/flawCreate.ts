@@ -29,7 +29,7 @@ export class FlawCreatePage {
     this.id = faker.string.alphanumeric({ length: 5, casing: 'upper' });
 
     this.titleBox = page.locator('label').filter({ hasText: 'Title' });
-    this.componentsBox = page.locator('label').filter({ hasText: 'Components' });
+    this.componentsBox = page.locator('label').filter({ hasText: 'Source Component' });
     this.impactBox = page.locator('label').filter({ hasText: 'Impact' });
     this.sourceBox = page.locator('label').filter({ hasText: 'CVE Source' });
     this.comment0Box = page.locator('label').filter({ hasText: 'Comment#0' });
