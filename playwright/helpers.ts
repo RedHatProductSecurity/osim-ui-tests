@@ -23,14 +23,15 @@ interface JSONResponse {
 const storagePath = 'playwright/.auth/';
 
 // Use http for localhost (CI), https otherwise
-const osidbBaseUrl = () => {
+export const osidbBaseUrl = () => {
   const host = process.env.OSIDB_URL || '';
   const protocol = host.startsWith('localhost') || host.startsWith('127.0.0.1') ? 'http' : 'https';
   return `${protocol}://${host}`;
 };
 
 async function authenticateWithKerberos(): Promise<{ access: string; refresh: string; cookies: string[] }> {
-  const { GSS_MECH_OID_KRB5, initializeClient } = await import('kerberos');
+  const kerberos = await import('kerberos');
+  const { GSS_MECH_OID_KRB5, initializeClient } = kerberos.default;
   const client = await initializeClient(`HTTP@${process.env.OSIDB_URL}`, {
     mechOID: GSS_MECH_OID_KRB5,
   });
@@ -110,6 +111,24 @@ export async function getFlawFromAPI<T extends string>(uuid: string, fields?: T[
   });
 
   return (await resp.json() as Record<T, unknown>);
+}
+
+export async function saveApiKeysToBackend(apiKeys: { bugzilla?: string; jira?: string }): Promise<void> {
+  const { access } = await authenticate();
+
+  const resp = await fetch(`${osidbBaseUrl()}/osidb/integrations`, {
+    headers: {
+      'Authorization': 'Bearer ' + access,
+      'Content-Type': 'application/json',
+    },
+    method: 'PATCH',
+    body: JSON.stringify(apiKeys),
+  });
+
+  if (!resp.ok) {
+    const text = await resp.text();
+    throw new Error(`Failed to save API keys: ${resp.status} ${resp.statusText} - ${text}`);
+  }
 }
 
 /**

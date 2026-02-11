@@ -1,24 +1,41 @@
 import { test as setup } from '@playwright/test';
-import { authenticate, saveStorage } from '../playwright/helpers';
+import { authenticate, saveStorage, saveApiKeysToBackend } from '../playwright/helpers';
+
+// Use http for localhost (CI), https otherwise
+const osimUrl = process.env.OSIM_URL || '';
+const osimProtocol = osimUrl.startsWith('localhost') || osimUrl.startsWith('127.0.0.1') ? 'http' : 'https';
 
 /**
  * Authenticate with the OSIDB API and save the tokens in the local storage
  *
  * References:
- *  - https://github.com/RedHatProductSecurity/osim/blob/main/src/stores/SettingsStore.ts
+ *  - https://github.com/RedHatProductSecurity/osim/blob/main/src/stores/AuthStore.ts
  *  - https://github.com/RedHatProductSecurity/osim/blob/main/src/stores/UserStore.ts
  */
 setup('authenticate', async ({ baseURL }) => {
   const { refresh, cookies } = await authenticate();
 
-  // Test fixture: always save refresh token for test environment
-  const userStoreData = {
-    env: 'test',
-    whoami: null,
-    jiraUsername: process.env.JIRA_USERNAME || '',
-    isLoggedIn: true,
-    refresh,
-  };
+  // Save API keys to backend so they're available when OSIM loads
+  // Skip in CI (ephemeral OSIDB) as the /osidb/integrations endpoint may not be available
+  if (!process.env.CI) {
+    const apiKeys: { bugzilla?: string; jira?: string } = {};
+    if (process.env.BUGZILLA_API_KEY) {
+      apiKeys.bugzilla = process.env.BUGZILLA_API_KEY;
+    }
+    if (process.env.JIRA_API_KEY) {
+      apiKeys.jira = process.env.JIRA_API_KEY;
+    }
+
+    if (Object.keys(apiKeys).length > 0) {
+      try {
+        await saveApiKeysToBackend(apiKeys);
+      } catch (error) {
+        console.warn('WARNING: Failed to save API keys to backend:', error);
+      }
+    } else {
+      console.warn('WARNING: No API keys found in environment variables (BUGZILLA_API_KEY, JIRA_API_KEY)');
+    }
+  }
 
   // Convert cookie strings to cookie objects for Playwright
   const cookieObjects = cookies.map((cookieStr) => {
@@ -36,7 +53,7 @@ setup('authenticate', async ({ baseURL }) => {
     } = {
       name: name.trim(),
       value: value.trim() || '',
-      domain: process.env.OSIDB_URL.split('/')[0] || 'localhost',
+      domain: (process.env.OSIDB_URL || 'localhost').split(':')[0],
       path: '/',
       expires: Math.floor(Date.now() / 1000) + 86400, // 24 hours from now
       httpOnly: false,
@@ -62,11 +79,23 @@ setup('authenticate', async ({ baseURL }) => {
     cookies: cookieObjects,
     origins: [
       {
-        origin: baseURL ?? process.env.OSIM_URL,
+        origin: baseURL ?? `${osimProtocol}://${osimUrl}`,
         localStorage: [
           {
+            name: 'AuthStore::isLoggedIn',
+            value: 'true',
+          },
+          {
+            name: 'AuthStore::refresh',
+            value: refresh,
+          },
+          {
             name: 'UserStore',
-            value: JSON.stringify(userStoreData),
+            value: JSON.stringify({
+              env: 'dev',
+              whoami: null,
+              jiraUsername: process.env.JIRA_USERNAME || '',
+            }),
           },
           {
             name: 'OSIM::USER-SETTINGS',
@@ -80,6 +109,20 @@ setup('authenticate', async ({ baseURL }) => {
               unifiedCommentsView: false,
               affectsColumnWidths: [],
               trackersColumnWidths: [],
+              affectsColumnOrder: [],
+              affectsGrouping: false,
+              affectsSizing: {},
+              affectsVisibility: {},
+              toursNotificationShown: ['affects-v2'],
+            }),
+          },
+          {
+            // Dev mode fallback: API keys stored separately (not in USER-SETTINGS which gets zod-validated)
+            // OSIM reads from this key when the backend /osidb/integrations call fails in dev mode
+            name: 'OSIM::DEV-API-KEYS',
+            value: JSON.stringify({
+              bugzillaApiKey: process.env.BUGZILLA_API_KEY || 'fake-bz-key',
+              jiraApiKey: process.env.JIRA_API_KEY || 'fake-jira-key',
             }),
           },
         ],
