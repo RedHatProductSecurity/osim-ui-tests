@@ -50,7 +50,32 @@ export class FlawCreatePage {
   }
 
   async goto() {
-    await this.page.goto('/flaws/new');
+    // Go to index first to let the app fully initialize
+    await this.page.goto('/');
+    await this.page.waitForSelector('text=Loaded', { timeout: 30000 });
+
+    // Navigate via UI click instead of direct URL to avoid guard timing issues
+    await this.page.getByRole('link', { name: 'Create Flaw' }).click();
+    await this.page.waitForLoadState('networkidle');
+
+    // If redirected to settings (API keys missing), fill in keys and retry
+    if (this.page.url().includes('/settings')) {
+      const bugzillaInput = this.page.getByLabel('Bugzilla API Key');
+      const jiraInput = this.page.getByLabel('JIRA API Key');
+
+      await bugzillaInput.waitFor({ state: 'visible', timeout: 5000 });
+
+      if (process.env.BUGZILLA_API_KEY) {
+        await bugzillaInput.fill(process.env.BUGZILLA_API_KEY);
+      }
+      if (process.env.JIRA_API_KEY) {
+        await jiraInput.fill(process.env.JIRA_API_KEY);
+      }
+
+      await this.page.getByRole('button', { name: 'Save Settings' }).click();
+      await this.page.waitForTimeout(1000);
+      await this.page.getByRole('link', { name: 'Create Flaw' }).click();
+    }
   }
 
   async fillTextBox(locator: Locator, text: string) {

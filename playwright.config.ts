@@ -47,9 +47,9 @@ export default defineConfig({
     trace: 'on-first-retry',
     baseURL: `${osimProtocol}://${osimUrl}`,
   },
-  timeout: 60000,
+  timeout: 180000, // 3 minutes for CI with slow ephemeral OSIDB
   expect: {
-    timeout: 20000,
+    timeout: 30000,
   },
   projects: [
     {
