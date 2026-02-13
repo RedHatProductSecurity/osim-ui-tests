@@ -53,6 +53,8 @@ export class FlawCreatePage {
     // Go to index first to let the app fully initialize
     await this.page.goto('/');
     await this.page.waitForSelector('text=Loaded', { timeout: 30000 });
+    // Wait for API keys to be loaded from backend (async operation)
+    await this.page.waitForTimeout(2000);
 
     // Navigate via UI click instead of direct URL to avoid guard timing issues
     await this.page.getByRole('link', { name: 'Create Flaw' }).click();
@@ -140,9 +142,9 @@ export class FlawCreatePage {
     await this.submitButton.click();
   }
 
-  static async createFlawWithAPI(options: { embargoed?: boolean } = {}): Promise<string> {
+  static async createFlawWithAPI(options: { embargoed?: boolean; major_incident_state?: string } = {}): Promise<string> {
     const { access } = await authenticate();
-    const { embargoed = false } = options;
+    const { embargoed = false, major_incident_state } = options;
 
     const flawId = faker.string.alphanumeric({ length: 5, casing: 'upper' });
     const flaw: Record<string, unknown> = {
@@ -159,6 +161,8 @@ export class FlawCreatePage {
       reported_dt: dayjs().utc().format('YYYY-MM-DDTHH:mm:ss.SSS[Z]'),
       // Set owner so "My Issues" filter works in CI
       owner: process.env.JIRA_USERNAME || '',
+      // Set major_incident_state if provided (enables editing the field in edit mode)
+      ...(major_incident_state && { major_incident_state }),
     };
 
     // Only set unembargo_dt for public flaws

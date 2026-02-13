@@ -1,5 +1,6 @@
 import { test as setup } from '@playwright/test';
 import { authenticate, saveStorage, saveApiKeysToBackend } from '../playwright/helpers';
+import { cweTestData } from '../playwright/cweData';
 
 // Use http for localhost (CI), https otherwise
 const osimUrl = process.env.OSIM_URL || '';
@@ -89,6 +90,7 @@ setup('authenticate', async ({ baseURL }) => {
             name: 'AuthStore::refresh',
             value: refresh,
           },
+          // UserStore for user info
           {
             name: 'UserStore',
             value: JSON.stringify({
@@ -124,6 +126,11 @@ setup('authenticate', async ({ baseURL }) => {
               bugzillaApiKey: process.env.BUGZILLA_API_KEY || 'fake-bz-key',
               jiraApiKey: process.env.JIRA_API_KEY || 'fake-jira-key',
             }),
+          },
+          {
+            // CWE data for autocomplete feature
+            name: 'CWE:API-DATA',
+            value: JSON.stringify(cweTestData),
           },
         ],
       },
