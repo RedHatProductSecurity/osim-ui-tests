@@ -5,7 +5,8 @@ This repository contains end-to-end tests for [OSIM](https://github.com/RedHatPr
 
 - `OSIM_URL`: URL of the OSIM instance to test
 - `OSIDB_URL`: URL of the OSIDB instance to test
-- `JIRA_USERNAME`: Username of the authenticated user in JIRA
+- `JIRA_USERNAME`: Display name of the authenticated user in Jira (used for UI assertions)
+- `JIRA_EMAIL`: Email address of the authenticated user in Jira (used as owner/contributor identifier)
 - `JIRA_API_KEY`: API key for JIRA (used for API calls during test setup)
 - `BUGZILLA_API_KEY`: API key for Bugzilla (used for API calls during test setup)
 

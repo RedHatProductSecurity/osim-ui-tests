@@ -29,7 +29,7 @@ test.describe('flaw list', () => {
 
     const owners = await Promise.all((await page.locator('tr td:nth-child(6)').all()).map(async owner => await owner.innerText()));
 
-    expect(owners).toEqual(Array(owners.length).fill(process.env.JIRA_USERNAME));
+    expect(owners).toEqual(Array(owners.length).fill(process.env.JIRA_EMAIL));
   });
 
   test.describe('sort flaws', () => {
@@ -101,7 +101,7 @@ test.describe('flaw edition', () => {
     // Skip in CI: Jira link not displayed without valid Jira backend
     test.skip(!!process.env.CI, 'Jira link requires valid Jira backend configuration');
     const jiraLink = flawEditPage.jiraLink;
-    await expect(jiraLink).toHaveAttribute('href', /issue/);
+    await expect(jiraLink).toHaveAttribute('href', /browse/);
 
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),

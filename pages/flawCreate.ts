@@ -158,7 +158,7 @@ export class FlawCreatePage {
       embargoed,
       reported_dt: dayjs().utc().format('YYYY-MM-DDTHH:mm:ss.SSS[Z]'),
       // Set owner so "My Issues" filter works in CI
-      owner: process.env.JIRA_USERNAME || '',
+      owner: process.env.JIRA_EMAIL || '',
     };
 
     // Only set unembargo_dt for public flaws

@@ -4,6 +4,7 @@ declare global {
       JIRA_API_KEY: string;
       BUGZILLA_API_KEY: string;
       JIRA_USERNAME: string;
+      JIRA_EMAIL: string;
       OSIDB_URL: string;
       OSIM_URL: string;
       // Optional: for credentials auth (alternative to Kerberos)
