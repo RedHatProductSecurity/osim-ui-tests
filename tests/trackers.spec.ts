@@ -30,32 +30,15 @@ test.describe('tracker manager', () => {
   test.describe('setup', () => {
     test('add affect to enable tracker manager', async ({ page }) => {
       // Tracker manager only appears when affects exist
-      const addButton = page.locator('button[title="Add new affect"]');
-      await addButton.waitFor({ state: 'visible', timeout: 30000 });
-      await addButton.click();
-
-      const newRow = page.locator('tr.new').last();
-      await newRow.waitFor({ state: 'visible', timeout: 10000 });
-
-      // Fill Product Stream
-      const productStreamCell = newRow.locator('td').nth(3);
-      await productStreamCell.dblclick();
-      let textInput = page.locator('table input[type="text"]:visible').first();
-      await textInput.waitFor({ state: 'visible', timeout: 5000 });
-      await textInput.fill('rhel-8');
-      await textInput.press('Escape');
-
-      await page.waitForTimeout(300);
-
-      // Fill Component
-      const componentCell = newRow.locator('td').nth(5);
-      await componentCell.dblclick();
-      textInput = page.locator('table input[type="text"]:visible').first();
-      await textInput.waitFor({ state: 'visible', timeout: 5000 });
-      await textInput.fill('kernel');
-      await textInput.press('Escape');
-
-      await page.waitForTimeout(500);
+      await flawEditPage.addAffect({
+        productStream: 'rhel-8.10.0',
+        module: 'rhel-8',
+        component: 'kernel',
+        purl: 'pkg:rpm/redhat/kernel@5.14.0',
+        affectedness: 'AFFECTED',
+        resolution: 'DELEGATED',
+        impact: 'LOW',
+      });
 
       // Save
       await page.getByRole('button', { name: 'Save Changes', exact: true }).click();
