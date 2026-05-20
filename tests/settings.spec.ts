@@ -42,7 +42,7 @@ test('load setting page', async ({ page }) => {
 
 test('configure api keys', async ({ page }) => {
   await page.getByLabel('Bugzilla API Key').fill(process.env.BUGZILLA_API_KEY);
-  await page.getByLabel('JIRA API Key').fill(process.env.JIRA_API_KEY);
+  await page.getByLabel('JIRA API Token').fill(process.env.JIRA_API_KEY);
 
   // Click the Save Settings button to persist the API keys
   await page.getByRole('button', { name: 'Save Settings' }).click();
