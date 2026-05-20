@@ -21,7 +21,6 @@ export class FlawCreatePage {
   readonly statementBox: Locator;
   readonly mitigationBox: Locator;
   readonly descriptionBox: Locator;
-  readonly reviewStatusBox: Locator;
   readonly selfAssingBtn: Locator;
   readonly cvssCalculatorInput: Locator;
   readonly cvssCalculator: Locator;
@@ -42,7 +41,6 @@ export class FlawCreatePage {
     this.mitigationBox = page.locator('label').filter({ hasText: 'Mitigation' });
     this.selfAssingBtn = page.getByRole('button', { name: 'Self Assign' });
     this.descriptionBox = page.locator('label').filter({ hasText: 'Description' });
-    this.reviewStatusBox = page.locator('label').filter({ hasText: 'Description' });
     this.cvssCalculatorInput = page.locator('label[role="red-hat-cvss"]');
     this.cvssCalculator = page.locator('.cvss-calculator');
 
@@ -126,7 +124,6 @@ export class FlawCreatePage {
     await this.fillTextArea(this.statementBox, faker.hacker.phrase());
     await this.fillTextArea(this.mitigationBox, faker.hacker.phrase());
     await this.fillTextArea(this.descriptionBox, faker.hacker.phrase());
-    await this.fillSelect(this.reviewStatusBox, 'REQUESTED');
     await this.fillCVSSCalculator();
     await this.selfAssingBtn.click();
   }
