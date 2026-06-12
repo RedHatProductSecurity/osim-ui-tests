@@ -144,7 +144,7 @@ export class FlawCreatePage {
 
   static async createFlawWithAPI(options: { embargoed?: boolean; major_incident_state?: string } = {}): Promise<string> {
     const { access } = await authenticate();
-    const { embargoed = false } = options;
+    const { embargoed = false, major_incident_state } = options;
 
     const flawId = faker.string.alphanumeric({ length: 5, casing: 'upper' });
     const flaw: Record<string, unknown> = {
@@ -166,6 +166,11 @@ export class FlawCreatePage {
     // Only set unembargo_dt for public flaws
     if (!embargoed) {
       flaw.unembargo_dt = dayjs().utc().subtract(5, 'minutes').format('YYYY-MM-DDTHH:mm:ss.SSS[Z]');
+    }
+
+    // Set major_incident_state if provided (required for incident state tests)
+    if (major_incident_state) {
+      flaw.major_incident_state = major_incident_state;
     }
 
     const resp = await fetch(`${osidbBaseUrl()}/osidb/api/v1/flaws`, {
