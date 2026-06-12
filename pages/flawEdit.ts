@@ -184,6 +184,7 @@ export class FlawEditPage extends FlawCreatePage {
       return;
     }
 
+    // 15 attempts with increasing delay: 1s, 2s, 3s, ... 15s (total max wait: 120s)
     for (let i = 0; i < 15; i++) {
       const flaw = await getFlawFromAPI(uuid, ['task_key']);
       if (flaw.task_key) {
