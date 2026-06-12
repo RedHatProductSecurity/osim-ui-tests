@@ -142,9 +142,9 @@ export class FlawCreatePage {
     await this.submitButton.click();
   }
 
-  static async createFlawWithAPI(options: { embargoed?: boolean; major_incident_state?: string } = {}): Promise<string> {
+  static async createFlawWithAPI(options: { embargoed?: boolean; major_incident_state?: string; withOwner?: boolean } = {}): Promise<string> {
     const { access } = await authenticate();
-    const { embargoed = false, major_incident_state } = options;
+    const { embargoed = false, major_incident_state, withOwner = true } = options;
 
     const flawId = faker.string.alphanumeric({ length: 5, casing: 'upper' });
     const flaw: Record<string, unknown> = {
@@ -159,8 +159,8 @@ export class FlawCreatePage {
       source: 'REDHAT',
       embargoed,
       reported_dt: dayjs().utc().format('YYYY-MM-DDTHH:mm:ss.SSS[Z]'),
-      // Set owner so "My Issues" filter works in CI
-      owner: process.env.JIRA_EMAIL || '',
+      // Set owner so "My Issues" filter works in CI (unless explicitly disabled)
+      owner: withOwner ? (process.env.JIRA_EMAIL || '') : '',
     };
 
     // Only set unembargo_dt for public flaws

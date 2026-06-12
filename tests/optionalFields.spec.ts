@@ -299,37 +299,38 @@ test.describe('optional flaw fields', () => {
   });
 
   test.describe('Owner', () => {
-    let flawId: string;
-
-    test.beforeAll(async () => {
-      flawId = await FlawCreatePage.createFlawWithAPI();
-    });
-
-    test.beforeEach(async ({ page }) => {
+    test('can self-assign as owner', async ({ page }) => {
+      // Create flaw without owner so Self Assign button is visible
+      const flawId = await FlawCreatePage.createFlawWithAPI({ withOwner: false });
       await page.goto(`/flaws/${flawId}`);
       await expect(page.getByRole('button', { name: 'Save Changes', exact: true })).toBeVisible();
-    });
 
-    test('can self-assign as owner', async ({ page }) => {
       const selfAssignBtn = page.getByRole('button', { name: 'Self Assign' });
 
-      if (await selfAssignBtn.isVisible()) {
-        await selfAssignBtn.click();
-        await page.getByRole('button', { name: 'Save Changes', exact: true }).click();
+      // Assert button should be visible for this flaw state
+      await expect(selfAssignBtn).toBeVisible();
 
-        await expect(page.getByText('Flaw saved').first()).toBeVisible();
-      }
+      await selfAssignBtn.click();
+      await page.getByRole('button', { name: 'Save Changes', exact: true }).click();
+
+      await expect(page.getByText('Flaw saved').first()).toBeVisible();
     });
 
     test('can unassign owner', async ({ page }) => {
+      // Create flaw with owner so Unassign button is visible
+      const flawId = await FlawCreatePage.createFlawWithAPI({ withOwner: true });
+      await page.goto(`/flaws/${flawId}`);
+      await expect(page.getByRole('button', { name: 'Save Changes', exact: true })).toBeVisible();
+
       const unassignBtn = page.getByRole('button', { name: 'Unassign' });
 
-      if (await unassignBtn.isVisible()) {
-        await unassignBtn.click();
-        await page.getByRole('button', { name: 'Save Changes', exact: true }).click();
+      // Assert button should be visible for this flaw state
+      await expect(unassignBtn).toBeVisible();
 
-        await expect(page.getByText('Flaw saved').first()).toBeVisible();
-      }
+      await unassignBtn.click();
+      await page.getByRole('button', { name: 'Save Changes', exact: true }).click();
+
+      await expect(page.getByText('Flaw saved').first()).toBeVisible();
     });
   });
 
