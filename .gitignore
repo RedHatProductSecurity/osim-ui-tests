@@ -7,3 +7,6 @@ node_modules/
 .vscode
 .env
 *.keytab
+
+# Cursor AI configuration
+.cursor/

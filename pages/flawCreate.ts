@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import { faker } from '@faker-js/faker';
-import { authenticate, dayjs } from '../playwright/helpers';
+import { authenticate, dayjs, osidbBaseUrl } from '../playwright/helpers';
 
 export type FlawType = 'embargoed' | 'public';
 
@@ -28,8 +28,8 @@ export class FlawCreatePage {
   constructor(public readonly page: Page) {
     this.id = faker.string.alphanumeric({ length: 5, casing: 'upper' });
 
-    this.titleBox = page.locator('label').filter({ hasText: 'Title' });
-    this.componentsBox = page.locator('label').filter({ hasText: 'Components' });
+    this.titleBox = page.locator('.osim-input').filter({ hasText: 'Title' });
+    this.componentsBox = page.locator('label').filter({ hasText: 'Source Component' });
     this.impactBox = page.locator('label').filter({ hasText: 'Impact' });
     this.sourceBox = page.locator('label').filter({ hasText: 'CVE Source' });
     this.comment0Box = page.locator('label').filter({ hasText: 'Comment#0' });
@@ -43,14 +43,41 @@ export class FlawCreatePage {
     this.selfAssingBtn = page.getByRole('button', { name: 'Self Assign' });
     this.descriptionBox = page.locator('label').filter({ hasText: 'Description' });
     this.reviewStatusBox = page.locator('label').filter({ hasText: 'Description' });
-    this.cvssCalculatorInput = page.locator('label').filter({ hasText: 'RH CVSS' });
+    this.cvssCalculatorInput = page.locator('label[role="red-hat-cvss"]');
     this.cvssCalculator = page.locator('.cvss-calculator');
 
     this.submitButton = page.getByRole('button', { name: 'Create New Flaw' });
   }
 
   async goto() {
-    await this.page.goto('/flaws/new');
+    // Go to index first to let the app fully initialize
+    await this.page.goto('/');
+    await this.page.waitForSelector('text=Loaded', { timeout: 30000 });
+    // Wait for API keys to be loaded from backend (async operation)
+    await this.page.waitForTimeout(2000);
+
+    // Navigate via UI click instead of direct URL to avoid guard timing issues
+    await this.page.getByRole('link', { name: 'Create Flaw' }).click();
+    await this.page.waitForLoadState('networkidle');
+
+    // If redirected to settings (API keys missing), fill in keys and retry
+    if (this.page.url().includes('/settings')) {
+      const bugzillaInput = this.page.getByLabel('Bugzilla API Key');
+      const jiraInput = this.page.getByLabel('JIRA API Key');
+
+      await bugzillaInput.waitFor({ state: 'visible', timeout: 5000 });
+
+      if (process.env.BUGZILLA_API_KEY) {
+        await bugzillaInput.fill(process.env.BUGZILLA_API_KEY);
+      }
+      if (process.env.JIRA_API_KEY) {
+        await jiraInput.fill(process.env.JIRA_API_KEY);
+      }
+
+      await this.page.getByRole('button', { name: 'Save Settings' }).click();
+      await this.page.waitForTimeout(1000);
+      await this.page.getByRole('link', { name: 'Create Flaw' }).click();
+    }
   }
 
   async fillTextBox(locator: Locator, text: string) {
@@ -115,11 +142,12 @@ export class FlawCreatePage {
     await this.submitButton.click();
   }
 
-  static async createFlawWithAPI(): Promise<string> {
+  static async createFlawWithAPI(options: { embargoed?: boolean; major_incident_state?: string; withOwner?: boolean } = {}): Promise<string> {
     const { access } = await authenticate();
+    const { embargoed = false, major_incident_state, withOwner = true } = options;
 
     const flawId = faker.string.alphanumeric({ length: 5, casing: 'upper' });
-    const flaw = {
+    const flaw: Record<string, unknown> = {
       impact: '',
       components: ['e2e', flawId],
       title: 'Test flaw ' + flawId,
@@ -129,22 +157,43 @@ export class FlawCreatePage {
       },
       comment_zero: faker.hacker.phrase(),
       source: 'REDHAT',
-      embargoed: false,
-      unembargo_dt: dayjs().utc().subtract(5, 'minutes').format('YYYY-MM-DDTHH:mm:ss.SSS[Z]'),
+      embargoed,
       reported_dt: dayjs().utc().format('YYYY-MM-DDTHH:mm:ss.SSS[Z]'),
+      // Set owner so "My Issues" filter works in CI (unless explicitly disabled)
+      owner: withOwner ? (process.env.JIRA_EMAIL || '') : '',
     };
 
-    const resp = await fetch(`https://${process.env.OSIDB_URL}/osidb/api/v1/flaws`, {
+    // Only set unembargo_dt for public flaws
+    if (!embargoed) {
+      flaw.unembargo_dt = dayjs().utc().subtract(5, 'minutes').format('YYYY-MM-DDTHH:mm:ss.SSS[Z]');
+    }
+
+    // Set major_incident_state if provided (required for incident state tests)
+    if (major_incident_state) {
+      flaw.major_incident_state = major_incident_state;
+    }
+
+    const resp = await fetch(`${osidbBaseUrl()}/osidb/api/v1/flaws`, {
       headers: {
         'Authorization': 'Bearer ' + access,
-        'bugzilla-api-key': process.env.BUGZILLA_API_KEY,
+        'bugzilla-api-key': process.env.BUGZILLA_API_KEY || '',
         'content-type': 'application/json',
-        'jira-api-key': process.env.JIRA_API_KEY,
+        'jira-api-key': process.env.JIRA_API_KEY || '',
       },
       body: JSON.stringify(flaw),
       method: 'POST',
     });
 
-    return (await resp.json() as { uuid: string }).uuid;
+    if (!resp.ok) {
+      const text = await resp.text();
+      throw new Error(`Failed to create flaw: ${resp.status} ${resp.statusText} - ${text}`);
+    }
+
+    const data = await resp.json() as { uuid: string };
+    if (!data.uuid) {
+      throw new Error(`Flaw creation returned no UUID: ${JSON.stringify(data)}`);
+    }
+
+    return data.uuid;
   }
 }

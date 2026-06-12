@@ -30,7 +30,7 @@ export default tseslint.config(
     ignores: [
     'eslint.config.mjs',
     'playwright.config.ts',
-    'tests-results/**/*',
+    'test-results/**/*',
     'playwright-report/**/*'
   ]
 }
