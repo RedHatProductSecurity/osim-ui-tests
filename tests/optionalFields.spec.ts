@@ -3,18 +3,18 @@ import { FlawCreatePage } from '../pages/flawCreate';
 import { faker } from '@faker-js/faker';
 
 test.describe('optional flaw fields', () => {
-  let flawId: string;
-
-  test.beforeAll(async () => {
-    flawId = await FlawCreatePage.createFlawWithAPI();
-  });
-
-  test.beforeEach(async ({ page }) => {
-    await page.goto(`/flaws/${flawId}`);
-    await expect(page.getByRole('button', { name: 'Save Changes', exact: true })).toBeVisible();
-  });
-
   test.describe('CVE ID', () => {
+    let flawId: string;
+
+    test.beforeAll(async () => {
+      flawId = await FlawCreatePage.createFlawWithAPI();
+    });
+
+    test.beforeEach(async ({ page }) => {
+      await page.goto(`/flaws/${flawId}`);
+      await expect(page.getByRole('button', { name: 'Save Changes', exact: true })).toBeVisible();
+    });
+
     test('can add a CVE ID', async ({ page }) => {
       const cveId = `CVE-${faker.number.int({ min: 2100, max: 2999 })}-${faker.number.int({ max: 9999 }).toString().padStart(4, '0')}`;
       const cveIdField = page.locator('label').filter({ hasText: 'CVE ID' });
@@ -39,6 +39,17 @@ test.describe('optional flaw fields', () => {
   });
 
   test.describe('CWE ID', () => {
+    let flawId: string;
+
+    test.beforeAll(async () => {
+      flawId = await FlawCreatePage.createFlawWithAPI();
+    });
+
+    test.beforeEach(async ({ page }) => {
+      await page.goto(`/flaws/${flawId}`);
+      await expect(page.getByRole('button', { name: 'Save Changes', exact: true })).toBeVisible();
+    });
+
     test('can add a CWE ID', async ({ page }) => {
       const cweId = `CWE-${faker.number.int({ min: 1, max: 999 })}`;
       const cweField = page.locator('.osim-input').filter({ hasText: 'CWE ID' });
@@ -142,6 +153,17 @@ test.describe('optional flaw fields', () => {
   });
 
   test.describe('Statement', () => {
+    let flawId: string;
+
+    test.beforeAll(async () => {
+      flawId = await FlawCreatePage.createFlawWithAPI();
+    });
+
+    test.beforeEach(async ({ page }) => {
+      await page.goto(`/flaws/${flawId}`);
+      await expect(page.getByRole('button', { name: 'Save Changes', exact: true })).toBeVisible();
+    });
+
     test('can add a statement', async ({ page }) => {
       const statement = faker.lorem.paragraph();
       const statementField = page.locator('label').filter({ hasText: 'Statement' });
@@ -165,6 +187,17 @@ test.describe('optional flaw fields', () => {
   });
 
   test.describe('Mitigation', () => {
+    let flawId: string;
+
+    test.beforeAll(async () => {
+      flawId = await FlawCreatePage.createFlawWithAPI();
+    });
+
+    test.beforeEach(async ({ page }) => {
+      await page.goto(`/flaws/${flawId}`);
+      await expect(page.getByRole('button', { name: 'Save Changes', exact: true })).toBeVisible();
+    });
+
     test('can add a mitigation', async ({ page }) => {
       const mitigation = faker.lorem.paragraph();
       const mitigationField = page.locator('label').filter({ hasText: 'Mitigation' });
@@ -195,6 +228,17 @@ test.describe('optional flaw fields', () => {
   });
 
   test.describe('Description', () => {
+    let flawId: string;
+
+    test.beforeAll(async () => {
+      flawId = await FlawCreatePage.createFlawWithAPI();
+    });
+
+    test.beforeEach(async ({ page }) => {
+      await page.goto(`/flaws/${flawId}`);
+      await expect(page.getByRole('button', { name: 'Save Changes', exact: true })).toBeVisible();
+    });
+
     test('can add a description', async ({ page }) => {
       const description = faker.lorem.paragraph();
       const descriptionField = page.locator('label').filter({ hasText: 'Description' }).first();
@@ -219,6 +263,17 @@ test.describe('optional flaw fields', () => {
   });
 
   test.describe('Reported Date', () => {
+    let flawId: string;
+
+    test.beforeAll(async () => {
+      flawId = await FlawCreatePage.createFlawWithAPI();
+    });
+
+    test.beforeEach(async ({ page }) => {
+      await page.goto(`/flaws/${flawId}`);
+      await expect(page.getByRole('button', { name: 'Save Changes', exact: true })).toBeVisible();
+    });
+
     test('can set reported date', async ({ page }) => {
       const reportedDateField = page.locator('label').filter({ hasText: 'Reported Date' });
 
@@ -244,6 +299,17 @@ test.describe('optional flaw fields', () => {
   });
 
   test.describe('Owner', () => {
+    let flawId: string;
+
+    test.beforeAll(async () => {
+      flawId = await FlawCreatePage.createFlawWithAPI();
+    });
+
+    test.beforeEach(async ({ page }) => {
+      await page.goto(`/flaws/${flawId}`);
+      await expect(page.getByRole('button', { name: 'Save Changes', exact: true })).toBeVisible();
+    });
+
     test('can self-assign as owner', async ({ page }) => {
       const selfAssignBtn = page.getByRole('button', { name: 'Self Assign' });
 
@@ -268,6 +334,17 @@ test.describe('optional flaw fields', () => {
   });
 
   test.describe('CVSS Calculator', () => {
+    let flawId: string;
+
+    test.beforeAll(async () => {
+      flawId = await FlawCreatePage.createFlawWithAPI();
+    });
+
+    test.beforeEach(async ({ page }) => {
+      await page.goto(`/flaws/${flawId}`);
+      await expect(page.getByRole('button', { name: 'Save Changes', exact: true })).toBeVisible();
+    });
+
     test('can set CVSS score via calculator', async ({ page }) => {
       // CVSS label uses role="red-hat-cvss" and text is either 'CVSS' or 'CVSSv3'
       const cvssInput = page.locator('label[role="red-hat-cvss"]');
@@ -371,6 +448,17 @@ test.describe('optional flaw fields', () => {
   });
 
   test.describe('Source', () => {
+    let flawId: string;
+
+    test.beforeAll(async () => {
+      flawId = await FlawCreatePage.createFlawWithAPI();
+    });
+
+    test.beforeEach(async ({ page }) => {
+      await page.goto(`/flaws/${flawId}`);
+      await expect(page.getByRole('button', { name: 'Save Changes', exact: true })).toBeVisible();
+    });
+
     const sources = ['REDHAT', 'CUSTOMER', 'RESEARCHER', 'INTERNET'];
 
     for (const source of sources) {
@@ -399,6 +487,17 @@ test.describe('optional flaw fields', () => {
   });
 
   test.describe('Impact', () => {
+    let flawId: string;
+
+    test.beforeAll(async () => {
+      flawId = await FlawCreatePage.createFlawWithAPI();
+    });
+
+    test.beforeEach(async ({ page }) => {
+      await page.goto(`/flaws/${flawId}`);
+      await expect(page.getByRole('button', { name: 'Save Changes', exact: true })).toBeVisible();
+    });
+
     const impacts = ['LOW', 'MODERATE', 'IMPORTANT', 'CRITICAL'];
 
     for (const impact of impacts) {
