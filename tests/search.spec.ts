@@ -296,6 +296,11 @@ test.describe('advanced search', () => {
       }
 
       await flawSearchPage.selectSavedSearch(deleteSearchName);
+
+      // Delete button should appear after selecting a saved search
+      const deleteButton = flawSearchPage.deleteSearchButton;
+      await expect(deleteButton).toBeVisible({ timeout: 10000 });
+
       await flawSearchPage.deleteCurrentSavedSearch();
       await expect(flawSearchPage.savedSearchesDetails.getByRole('button', { name: deleteSearchName })).not.toBeVisible();
     });

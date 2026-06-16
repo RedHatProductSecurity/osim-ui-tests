@@ -61,7 +61,7 @@ export class FlawCreatePage {
     // If redirected to settings (API keys missing), fill in keys and retry
     if (this.page.url().includes('/settings')) {
       const bugzillaInput = this.page.getByLabel('Bugzilla API Key');
-      const jiraInput = this.page.getByLabel('JIRA API Key');
+      const jiraInput = this.page.getByLabel('JIRA API Token');
 
       await bugzillaInput.waitFor({ state: 'visible', timeout: 5000 });
 
