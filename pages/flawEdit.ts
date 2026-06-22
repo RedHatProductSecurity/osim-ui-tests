@@ -4,6 +4,36 @@ import { faker } from '@faker-js/faker';
 import { getFlawFromAPI, sleep } from 'playwright/helpers';
 
 export type CommentType = 'public' | 'private' | 'internal';
+export type Affectedness = 'NEW' | 'AFFECTED' | 'NOTAFFECTED' | '';
+export type Resolution = 'FIX' | 'DEFER' | 'WONTFIX' | 'OOSS' | 'DELEGATED' | 'WONTREPORT' | '';
+export type AffectImpact = 'LOW' | 'MODERATE' | 'IMPORTANT' | 'CRITICAL' | '';
+
+export interface AffectData {
+  productStream?: string;
+  module?: string;
+  component?: string;
+  purl?: string;
+  affectedness?: Affectedness;
+  resolution?: Resolution;
+  impact?: AffectImpact;
+}
+
+/**
+ * Column indices for the affects table based on OSIM's columnDefinitions.tsx:
+ * 0=Checkbox, 1=Related CVEs, 2=Label, 3=Product Stream, 4=Module, 5=Component,
+ * 6=Analyzed Component (PURL), 7=Subpackage PURLs, 8=Affectedness,
+ * 9=Not Affected Justification, 10=Resolution, 11=Impact, 12+=CVSS/Trackers/Actions
+ */
+export const AFFECT_COLUMN_MAP = {
+  'Product Stream': 3,
+  'Module': 4,
+  'Component': 5,
+  'PURL': 6,
+  'Affectedness': 8,
+  'Justification': 9,
+  'Resolution': 10,
+  'Impact': 11,
+} as const;
 
 export class FlawEditPage extends FlawCreatePage {
   readonly createJiraTaskButton: Locator;
@@ -23,14 +53,38 @@ export class FlawEditPage extends FlawCreatePage {
   readonly internalCommentTab: Locator;
   readonly internalCommentBox: Locator;
   readonly saveInternalCommentBox: Locator;
-  readonly addAffectButton: Locator;
+
+  // Affects section
+  readonly affectsSection: Locator;
+  readonly affectsTable: Locator;
+  readonly affectRows: Locator;
+  readonly addNewAffectButton: Locator;
+  readonly noAffectsMessage: Locator;
+
+  // Affect row actions
   readonly editAffectButton: Locator;
-  readonly affectModuleBox: Locator;
-  readonly affectComponentBox: Locator;
-  readonly affectAffectednessBox: Locator;
-  readonly affectResolutionBox: Locator;
-  readonly affectImpactBox: Locator;
-  readonly affectCommitButton: Locator;
+  readonly removeAffectButton: Locator;
+  readonly commitEditButton: Locator;
+  readonly cancelEditButton: Locator;
+  readonly recoverAffectButton: Locator;
+  readonly revertChangesButton: Locator;
+
+  // Bulk affect actions
+  readonly manageTrackersButton: Locator;
+  readonly editSelectedButton: Locator;
+  readonly removeSelectedButton: Locator;
+  readonly commitAllButton: Locator;
+  readonly cancelAllButton: Locator;
+  readonly revertAllButton: Locator;
+  readonly recoverAllButton: Locator;
+
+  // Affect badges/filters
+  readonly showAllAffectsBadge: Locator;
+  readonly selectedAffectsBadge: Locator;
+  readonly editingAffectsBadge: Locator;
+  readonly modifiedAffectsBadge: Locator;
+  readonly removedAffectsBadge: Locator;
+  readonly addedAffectsBadge: Locator;
 
   // Optional field locators
   readonly cweBox: Locator;
@@ -58,15 +112,40 @@ export class FlawEditPage extends FlawCreatePage {
     this.internalCommentBox = this.page.locator('label').filter({ hasText: 'New Internal Comment' });
     this.saveInternalCommentBox = this.page.getByRole('button', { name: 'Save Internal Comment' });
 
-    // New TanStack-based Affects table (uses double-click to edit cells)
-    this.addAffectButton = this.page.getByTitle('Add new affect');
-    this.editAffectButton = this.page.getByTitle('Edit affect');
-    this.affectModuleBox = this.page.locator('tbody tr.new td').nth(1); // Module column
-    this.affectComponentBox = this.page.locator('tbody tr.new td').nth(2); // Component column
-    this.affectAffectednessBox = this.page.locator('tbody tr.new td').nth(3); // Affectedness column
-    this.affectResolutionBox = this.page.locator('tbody tr.new td').nth(4); // Resolution column
-    this.affectImpactBox = this.page.locator('tbody tr.new td').nth(5); // Impact column
-    this.affectCommitButton = this.page.getByTitle('Commit edit');
+    // Affects section - the div with id "affected-offerings" inside FlawForm
+    this.affectsSection = this.page.locator('#affected-offerings');
+    this.affectsTable = this.page.locator('#affected-offerings table');
+    this.affectRows = this.affectsTable.locator('tbody tr');
+
+    // Add New Affect button - use both title and text selectors
+    this.addNewAffectButton = this.page.locator('button[title="Add new affect"], button:has-text("Add New Affect")').first();
+    this.noAffectsMessage = this.page.getByText('This flaw has no affects');
+
+    // Affect row action buttons - use title attributes for specificity
+    this.editAffectButton = this.page.locator('button[title="Remove affect"]'); // legacy; cells are edited by dblclick in current UI
+    this.removeAffectButton = this.page.locator('button[title="Remove affect"]');
+    this.commitEditButton = this.page.locator('button[title="Apply changes to selected affects"]');
+    this.cancelEditButton = this.page.locator('button[title="Cancel bulk edit"]');
+    this.recoverAffectButton = this.page.locator('button[title="Revert changes"]');
+    this.revertChangesButton = this.page.locator('button[title="Revert changes"]');
+
+    // Bulk affect actions in affects-table-actions toolbar
+    this.manageTrackersButton = this.page.locator('button.trackers-btn');
+    this.editSelectedButton = this.page.locator('button[title="Bulk edit selected affects"]');
+    this.removeSelectedButton = this.page.locator('button[title="Remove selected affects"]');
+    this.commitAllButton = this.page.locator('button[title="Apply changes to selected affects"]');
+    this.cancelAllButton = this.page.locator('button[title="Cancel bulk edit"]');
+    this.revertAllButton = this.page.locator('button[title="Revert ALL changes"]');
+    this.recoverAllButton = this.page.locator('button[title="Revert changes"]');
+
+    // Affect count badge — actual DOM text from PaginationControls.vue: "Show All (N)"
+    this.showAllAffectsBadge = this.page.getByText(/Show All \(\d+\)/);
+    this.selectedAffectsBadge = this.page.locator('#affected-offerings').getByText(/\d+ Selected/);
+    this.editingAffectsBadge = this.page.locator('#affected-offerings').getByText(/Editing/);
+    this.modifiedAffectsBadge = this.page.locator('#affected-offerings').getByText(/Modified/);
+    this.removedAffectsBadge = this.page.locator('#affected-offerings').getByText(/Removed/);
+    this.addedAffectsBadge = this.page.locator('#affected-offerings').getByText(/Added/);
+
     this.submitButton = page.getByRole('button', { name: 'Save Changes', exact: true });
 
     // Optional fields
@@ -110,65 +189,88 @@ export class FlawEditPage extends FlawCreatePage {
     }
   }
 
-  async addAffect(stream = 'rhel-8.10.0', module = 'rhel-8', component = 'kernel') {
-    await this.addAffectButton.click();
+  getEditingAffectRow(): Locator {
+    return this.affectsTable.locator('tbody tr.new').first();
+  }
 
-    // New row appears - double-click cells to edit (TanStack table)
-    const newRow = this.page.locator('tbody tr.new').first();
-    await newRow.waitFor({ state: 'visible' });
+  async scrollToAffectsSection() {
+    // Scroll to the "Affected Offerings" heading
+    const heading = this.page.getByRole('heading', { name: 'Affected Offerings' });
+    await heading.scrollIntoViewIfNeeded();
+  }
 
-    // Helper to get column index by header text
-    const getColumnIndex = async (headerText: string) => {
-      const headers = this.page.locator('thead th');
-      const count = await headers.count();
-      for (let i = 0; i < count; i++) {
-        const text = await headers.nth(i).textContent();
-        if (text?.includes(headerText)) return i;
-      }
-      throw new Error(`Column "${headerText}" not found`);
-    };
+  async clickAddNewAffect() {
+    await this.scrollToAffectsSection();
+    await this.addNewAffectButton.click();
+    // Wait for editing row to appear
+    await this.affectsTable.locator('tbody tr.new').first().waitFor({ state: 'visible', timeout: 10000 });
+  }
 
-    // Edit Product Stream cell (required field)
-    const streamIdx = await getColumnIndex('Product Stream');
-    const streamCell = newRow.locator('td').nth(streamIdx);
-    await streamCell.dblclick();
-    await streamCell.locator('input').fill(stream);
-    await streamCell.locator('input').press('Enter');
+  /**
+   * Fill a field in an affect row.
+   */
+  async fillAffectField(row: Locator, columnName: keyof typeof AFFECT_COLUMN_MAP, value: string, isSelect = false) {
+    const columnIndex = AFFECT_COLUMN_MAP[columnName];
 
-    // Edit Module cell (double-click to enter edit mode)
-    const moduleIdx = await getColumnIndex('Module');
-    const moduleCell = newRow.locator('td').nth(moduleIdx);
-    await moduleCell.dblclick();
-    await moduleCell.locator('input').fill(module);
-    await moduleCell.locator('input').press('Enter');
+    const cell = row.locator('td').nth(columnIndex);
 
-    // Edit Component cell
-    const componentIdx = await getColumnIndex('Component');
-    const componentCell = newRow.locator('td').nth(componentIdx);
-    await componentCell.dblclick();
-    await componentCell.locator('input').fill(component);
-    await componentCell.locator('input').press('Enter');
+    // EditableCell starts in display mode (span); double-click to enter edit mode
+    await cell.dblclick();
 
-    // Edit Affectedness cell (dropdown)
-    const affectednessIdx = await getColumnIndex('Affectedness');
-    const affectednessCell = newRow.locator('td').nth(affectednessIdx);
-    await affectednessCell.dblclick();
-    await affectednessCell.locator('select').selectOption('AFFECTED');
-    await affectednessCell.locator('select').blur();
+    if (isSelect) {
+      const select = cell.locator('select');
+      await select.waitFor({ state: 'visible', timeout: 5000 });
+      await select.selectOption(value);
+      await select.press('Enter');
+    } else {
+      const input = cell.locator('input');
+      await input.waitFor({ state: 'visible', timeout: 5000 });
+      await input.fill(value);
+      await input.press('Enter');
+    }
+  }
 
-    // Edit Resolution cell (dropdown)
-    const resolutionIdx = await getColumnIndex('Resolution');
-    const resolutionCell = newRow.locator('td').nth(resolutionIdx);
-    await resolutionCell.dblclick();
-    await resolutionCell.locator('select').selectOption('DELEGATED');
-    await resolutionCell.locator('select').blur();
+  async addAffect(options: AffectData = {}) {
+    const {
+      productStream = 'rhel-8.10.0',
+      module = 'rhel-8',
+      component = 'kernel',
+      purl,
+      affectedness = 'AFFECTED',
+      resolution,
+      impact = 'LOW',
+    } = options;
 
-    // Edit Impact cell (dropdown)
-    const impactIdx = await getColumnIndex('Impact');
-    const impactCell = newRow.locator('td').nth(impactIdx);
-    await impactCell.dblclick();
-    await impactCell.locator('select').selectOption('LOW');
-    await impactCell.locator('select').blur();
+    await this.clickAddNewAffect();
+    const newRow = this.getEditingAffectRow();
+
+    // Fill Product Stream (required)
+    await this.fillAffectField(newRow, 'Product Stream', productStream);
+
+    // Fill Module
+    await this.fillAffectField(newRow, 'Module', module);
+
+    // Fill Component (required)
+    await this.fillAffectField(newRow, 'Component', component);
+
+    // Fill PURL/Analyzed Component (required by OSIDB)
+    await this.fillAffectField(newRow, 'PURL', purl ?? `pkg:rpm/redhat/${component}`);
+
+    // Fill Affectedness
+    if (affectedness) {
+      await this.fillAffectField(newRow, 'Affectedness', affectedness, true);
+    }
+
+    // Fill Resolution (default to DELEGATED for AFFECTED)
+    const resolvedResolution = resolution ?? (affectedness === 'AFFECTED' ? 'DELEGATED' : '');
+    if (resolvedResolution) {
+      await this.fillAffectField(newRow, 'Resolution', resolvedResolution, true);
+    }
+
+    // Fill Impact
+    if (impact) {
+      await this.fillAffectField(newRow, 'Impact', impact, true);
+    }
   }
 
   /**
