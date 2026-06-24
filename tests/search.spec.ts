@@ -286,21 +286,7 @@ test.describe('advanced search', () => {
       await flawSearchPage.addFacetWithSelect('Embargoed', 'false');
       await flawSearchPage.saveSearch(deleteSearchName);
 
-      // Dismiss the "Search saved" toast notification to unblock saved searches section
-      const toast = flawSearchPage.page.locator('.alert').filter({ hasText: 'Search saved' });
-      const toastCloseButton = toast.locator('button').first();
-      await toastCloseButton.waitFor({ state: 'visible', timeout: 5000 }).catch(() => undefined);
-      if (await toastCloseButton.isVisible()) {
-        await toastCloseButton.click();
-        await toast.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => undefined);
-      }
-
-      await flawSearchPage.selectSavedSearch(deleteSearchName);
-
-      // Delete button should appear after selecting a saved search
-      const deleteButton = flawSearchPage.deleteSearchButton;
-      await expect(deleteButton).toBeVisible({ timeout: 10000 });
-
+      // Search is already selected after saving, so Delete button should be visible
       await flawSearchPage.deleteCurrentSavedSearch();
       await expect(flawSearchPage.savedSearchesDetails.getByRole('button', { name: deleteSearchName })).not.toBeVisible();
     });
