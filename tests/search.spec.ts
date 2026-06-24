@@ -358,14 +358,14 @@ test.describe('advanced search', () => {
     });
 
     test('can open query filter guide modal', async ({ flawSearchPage }) => {
-      // Click the second "hide query filter" button which is actually the guide icon (OSIM bug: wrong aria-label)
-      const guideButton = flawSearchPage.page.getByRole('button', { name: 'hide query filter' }).nth(1);
+      // Click the question mark icon button to open guide modal
+      const guideButton = flawSearchPage.page.locator('button:has(.bi-question-circle-fill)');
       await guideButton.click();
 
       const modalHeading = flawSearchPage.page.getByRole('heading', { name: 'Query Filter Guide' });
       await expect(modalHeading).toBeVisible();
 
-      // Close modal and wait for it to disappear
+      // Close modal
       await flawSearchPage.page.getByRole('button', { name: 'Close' }).first().click();
       await expect(modalHeading).not.toBeVisible();
     });
