@@ -28,7 +28,7 @@ test.describe('tracker manager', () => {
   });
 
   test.describe('setup', () => {
-    test('add affect to enable tracker manager', async ({ page }) => {
+    test('add affect to enable tracker manager', async ({ page, flawEditPage }) => {
       // Tracker manager only appears when affects exist
       await flawEditPage.addAffect({
         productStream: 'rhel-8.10.0',

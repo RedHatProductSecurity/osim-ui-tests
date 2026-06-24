@@ -48,6 +48,11 @@ test.describe('optional flaw fields', () => {
     test.beforeEach(async ({ page }) => {
       await page.goto(`/flaws/${flawId}`);
       await expect(page.getByRole('button', { name: 'Save Changes', exact: true })).toBeVisible();
+      // Dismiss any blocking toasts (e.g., Jira auth errors)
+      const clearAllButton = page.locator('.osim-toast-container').getByRole('button', { name: /Clear All/i });
+      if (await clearAllButton.isVisible({ timeout: 1000 }).catch(() => false)) {
+        await clearAllButton.click();
+      }
     });
 
     test('can add a CWE ID', async ({ page }) => {
