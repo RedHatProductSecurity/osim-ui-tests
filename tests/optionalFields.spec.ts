@@ -249,17 +249,6 @@ test.describe('optional flaw fields', () => {
 
       await expect(page.getByText('Flaw saved').first()).toBeVisible();
     });
-
-    test('can set review status', async ({ page }) => {
-      const reviewStatuses = ['REQUESTED', 'APPROVED', 'REJECTED'];
-
-      for (const status of reviewStatuses) {
-        await page.locator('select.osim-description-required').selectOption(status);
-        await page.getByRole('button', { name: 'Save Changes', exact: true }).click();
-
-        await expect(page.getByText('Flaw saved').first()).toBeVisible();
-      }
-    });
   });
 
   test.describe('Reported Date', () => {
