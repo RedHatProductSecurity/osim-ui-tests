@@ -79,9 +79,11 @@ export class FlawCreatePage {
   }
 
   async fillTextBox(locator: Locator, text: string) {
-    await this.fillTextArea(locator, text);
-    // We need to focus on another element to trigger the validation.
-    await this.submitButton.focus();
+    await locator.click();
+    const input = locator.getByRole('textbox');
+    await input.fill(text);
+    // Press Tab to blur and commit the edit
+    await input.press('Tab');
   }
 
   async fillTextArea(locator: Locator, text: string) {

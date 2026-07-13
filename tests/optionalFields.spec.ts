@@ -311,17 +311,18 @@ test.describe('optional flaw fields', () => {
     });
 
     test('can unassign owner', async ({ page }) => {
-      // Create flaw with owner so Unassign button is visible
+      // Create flaw with owner
       const flawId = await FlawCreatePage.createFlawWithAPI({ withOwner: true });
       await page.goto(`/flaws/${flawId}`);
       await expect(page.getByRole('button', { name: 'Save Changes', exact: true })).toBeVisible();
 
-      const unassignBtn = page.getByRole('button', { name: 'Unassign' });
+      // Clear the Owner field to unassign
+      const ownerField = page.locator('.osim-input').filter({ has: page.getByText('Owner', { exact: true }) });
+      await ownerField.locator('.osim-editable-text').click();
+      const ownerInput = ownerField.locator('input');
+      await ownerInput.clear();
+      await ownerField.locator('button:has(i.bi-check)').click();
 
-      // Assert button should be visible for this flaw state
-      await expect(unassignBtn).toBeVisible();
-
-      await unassignBtn.click();
       await page.getByRole('button', { name: 'Save Changes', exact: true }).click();
 
       await expect(page.getByText('Flaw saved').first()).toBeVisible();
