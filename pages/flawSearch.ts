@@ -71,7 +71,7 @@ export class FlawSearchPage {
     this.savedSearchButtons = this.savedSearchesDetails.locator('.container-fluid button');
     this.saveSearchButton = page.getByRole('button', { name: 'Save Search' });
     this.updateSearchButton = page.getByRole('button', { name: 'Update Search' });
-    this.deleteSearchButton = page.getByRole('button', { name: 'Delete Search' });
+    this.deleteSearchButton = page.getByRole('button', { name: 'Delete search' });
     this.noSavedSearchesText = page.getByText('No saved searches');
 
     // Save Search Modal

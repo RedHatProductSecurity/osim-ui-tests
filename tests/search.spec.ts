@@ -286,16 +286,7 @@ test.describe('advanced search', () => {
       await flawSearchPage.addFacetWithSelect('Embargoed', 'false');
       await flawSearchPage.saveSearch(deleteSearchName);
 
-      // Dismiss the "Search saved" toast notification to unblock saved searches section
-      const toast = flawSearchPage.page.locator('.alert').filter({ hasText: 'Search saved' });
-      const toastCloseButton = toast.locator('button').first();
-      await toastCloseButton.waitFor({ state: 'visible', timeout: 5000 }).catch(() => undefined);
-      if (await toastCloseButton.isVisible()) {
-        await toastCloseButton.click();
-        await toast.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => undefined);
-      }
-
-      await flawSearchPage.selectSavedSearch(deleteSearchName);
+      // Search is already selected after saving, so Delete button should be visible
       await flawSearchPage.deleteCurrentSavedSearch();
       await expect(flawSearchPage.savedSearchesDetails.getByRole('button', { name: deleteSearchName })).not.toBeVisible();
     });
@@ -353,14 +344,14 @@ test.describe('advanced search', () => {
     });
 
     test('can open query filter guide modal', async ({ flawSearchPage }) => {
-      // Click the second "hide query filter" button which is actually the guide icon (OSIM bug: wrong aria-label)
-      const guideButton = flawSearchPage.page.getByRole('button', { name: 'hide query filter' }).nth(1);
+      // Click the question mark icon button to open guide modal
+      const guideButton = flawSearchPage.page.locator('button:has(.bi-question-circle-fill)');
       await guideButton.click();
 
       const modalHeading = flawSearchPage.page.getByRole('heading', { name: 'Query Filter Guide' });
       await expect(modalHeading).toBeVisible();
 
-      // Close modal and wait for it to disappear
+      // Close modal
       await flawSearchPage.page.getByRole('button', { name: 'Close' }).first().click();
       await expect(modalHeading).not.toBeVisible();
     });

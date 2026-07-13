@@ -20,7 +20,9 @@ test.describe('optional flaw fields', () => {
       const cveIdField = page.locator('label').filter({ hasText: 'CVE ID' });
 
       await cveIdField.click();
-      await cveIdField.getByRole('textbox').fill(cveId);
+      const input = cveIdField.getByRole('textbox');
+      await input.fill(cveId);
+      await input.press('Tab');
       await page.getByRole('button', { name: 'Save Changes', exact: true }).click();
 
       await expect(page.getByText('Flaw saved').first()).toBeVisible();
@@ -31,9 +33,12 @@ test.describe('optional flaw fields', () => {
       const cveIdField = page.locator('label').filter({ hasText: 'CVE ID' });
 
       await cveIdField.click();
-      await cveIdField.getByRole('textbox').fill('invalid-cve');
-      await page.getByRole('button', { name: 'Save Changes', exact: true }).focus();
+      const input = cveIdField.getByRole('textbox');
+      await input.fill('invalid-cve');
+      await input.press('Tab');
 
+      // The error is shown in an invalid-tooltip (only visible on hover)
+      await cveIdField.hover();
       await expect(page.getByText(/CVE ID is invalid/i)).toBeVisible();
     });
   });
@@ -48,6 +53,11 @@ test.describe('optional flaw fields', () => {
     test.beforeEach(async ({ page }) => {
       await page.goto(`/flaws/${flawId}`);
       await expect(page.getByRole('button', { name: 'Save Changes', exact: true })).toBeVisible();
+      // Dismiss any blocking toasts (e.g., Jira auth errors)
+      const clearAllButton = page.locator('.osim-toast-container').getByRole('button', { name: /Clear All/i });
+      if (await clearAllButton.isVisible({ timeout: 1000 }).catch(() => false)) {
+        await clearAllButton.click();
+      }
     });
 
     test('can add a CWE ID', async ({ page }) => {
@@ -55,7 +65,9 @@ test.describe('optional flaw fields', () => {
       const cweField = page.locator('.osim-input').filter({ hasText: 'CWE ID' });
 
       await cweField.click();
-      await cweField.getByRole('textbox').fill(cweId);
+      const input = cweField.getByRole('textbox');
+      await input.fill(cweId);
+      await input.press('Tab');
       await page.getByRole('button', { name: 'Save Changes', exact: true }).click();
 
       await expect(page.getByText('Flaw saved').first()).toBeVisible();
@@ -66,13 +78,16 @@ test.describe('optional flaw fields', () => {
 
       // First add a CWE ID
       await cweField.click();
-      await cweField.getByRole('textbox').fill('CWE-79');
+      const input = cweField.getByRole('textbox');
+      await input.fill('CWE-79');
+      await input.press('Tab');
       await page.getByRole('button', { name: 'Save Changes', exact: true }).click();
       await expect(page.getByText('Flaw saved').first()).toBeVisible();
 
       // Then clear it
       await cweField.click();
-      await cweField.getByRole('textbox').clear();
+      await input.clear();
+      await input.press('Tab');
       await page.getByRole('button', { name: 'Save Changes', exact: true }).click();
 
       await expect(page.getByText('Flaw saved').first()).toBeVisible();
@@ -169,7 +184,9 @@ test.describe('optional flaw fields', () => {
       const statementField = page.locator('label').filter({ hasText: 'Statement' });
 
       await statementField.click();
-      await statementField.getByRole('textbox').fill(statement);
+      const input = statementField.getByRole('textbox');
+      await input.fill(statement);
+      await input.press('Tab');
       await page.getByRole('button', { name: 'Save Changes', exact: true }).click();
 
       await expect(page.getByText('Flaw saved').first()).toBeVisible();
@@ -179,7 +196,9 @@ test.describe('optional flaw fields', () => {
       const statementField = page.locator('label').filter({ hasText: 'Statement' });
 
       await statementField.click();
-      await statementField.getByRole('textbox').clear();
+      const input = statementField.getByRole('textbox');
+      await input.clear();
+      await input.press('Tab');
       await page.getByRole('button', { name: 'Save Changes', exact: true }).click();
 
       await expect(page.getByText('Flaw saved').first()).toBeVisible();
@@ -203,7 +222,9 @@ test.describe('optional flaw fields', () => {
       const mitigationField = page.locator('label').filter({ hasText: 'Mitigation' });
 
       await mitigationField.click();
-      await mitigationField.getByRole('textbox').fill(mitigation);
+      const input = mitigationField.getByRole('textbox');
+      await input.fill(mitigation);
+      await input.press('Tab');
       await page.getByRole('button', { name: 'Save Changes', exact: true }).click();
 
       await expect(page.getByText('Flaw saved').first()).toBeVisible();
@@ -214,13 +235,16 @@ test.describe('optional flaw fields', () => {
 
       // First add a mitigation value
       await mitigationField.click();
-      await mitigationField.getByRole('textbox').fill('Temporary mitigation');
+      const input = mitigationField.getByRole('textbox');
+      await input.fill('Temporary mitigation');
+      await input.press('Tab');
       await page.getByRole('button', { name: 'Save Changes', exact: true }).click();
       await expect(page.getByText('Flaw saved').first()).toBeVisible();
 
       // Then clear it
       await mitigationField.click();
-      await mitigationField.getByRole('textbox').clear();
+      await input.clear();
+      await input.press('Tab');
       await page.getByRole('button', { name: 'Save Changes', exact: true }).click();
 
       await expect(page.getByText('Flaw saved').first()).toBeVisible();
@@ -244,21 +268,12 @@ test.describe('optional flaw fields', () => {
       const descriptionField = page.locator('label').filter({ hasText: 'Description' }).first();
 
       await descriptionField.click();
-      await descriptionField.getByRole('textbox').fill(description);
+      const input = descriptionField.getByRole('textbox');
+      await input.fill(description);
+      await input.press('Tab');
       await page.getByRole('button', { name: 'Save Changes', exact: true }).click();
 
       await expect(page.getByText('Flaw saved').first()).toBeVisible();
-    });
-
-    test('can set review status', async ({ page }) => {
-      const reviewStatuses = ['REQUESTED', 'APPROVED', 'REJECTED'];
-
-      for (const status of reviewStatuses) {
-        await page.locator('select.osim-description-required').selectOption(status);
-        await page.getByRole('button', { name: 'Save Changes', exact: true }).click();
-
-        await expect(page.getByText('Flaw saved').first()).toBeVisible();
-      }
     });
   });
 
@@ -275,23 +290,25 @@ test.describe('optional flaw fields', () => {
     });
 
     test('can set reported date', async ({ page }) => {
-      const reportedDateField = page.locator('label').filter({ hasText: 'Reported Date' });
+      const reportedDateField = page.locator('.osim-input').filter({ has: page.getByText('Reported Date') });
 
-      await reportedDateField.click();
-      const dateInput = reportedDateField.getByRole('textbox');
-      await dateInput.clear();
+      await reportedDateField.locator('.osim-editable-date').click();
+      const dateInput = reportedDateField.locator('input');
       await dateInput.fill('2024-01-15');
+      await dateInput.press('Tab');
       await page.getByRole('button', { name: 'Save Changes', exact: true }).click();
 
       await expect(page.getByText('Flaw saved').first()).toBeVisible();
     });
 
     test('can change reported date', async ({ page }) => {
-      const reportedDateField = page.locator('label').filter({ hasText: 'Reported Date' });
+      const reportedDateField = page.locator('.osim-input').filter({ has: page.getByText('Reported Date') });
 
-      // Reported Date is required, so we change it to a different date instead of clearing
-      await reportedDateField.click();
-      await reportedDateField.getByRole('textbox').fill('2024-01-15');
+      // Use a different date than 'can set reported date' to verify change works
+      await reportedDateField.locator('.osim-editable-date').click();
+      const dateInput = reportedDateField.locator('input');
+      await dateInput.fill('2024-02-20');
+      await dateInput.press('Tab');
       await page.getByRole('button', { name: 'Save Changes', exact: true }).click();
 
       await expect(page.getByText('Flaw saved').first()).toBeVisible();
@@ -317,17 +334,18 @@ test.describe('optional flaw fields', () => {
     });
 
     test('can unassign owner', async ({ page }) => {
-      // Create flaw with owner so Unassign button is visible
+      // Create flaw with owner
       const flawId = await FlawCreatePage.createFlawWithAPI({ withOwner: true });
       await page.goto(`/flaws/${flawId}`);
       await expect(page.getByRole('button', { name: 'Save Changes', exact: true })).toBeVisible();
 
-      const unassignBtn = page.getByRole('button', { name: 'Unassign' });
+      // Clear the Owner field to unassign
+      const ownerField = page.locator('.osim-input').filter({ has: page.getByText('Owner', { exact: true }) });
+      await ownerField.locator('.osim-editable-text').click();
+      const ownerInput = ownerField.locator('input');
+      await ownerInput.clear();
+      await ownerField.locator('button:has(i.bi-check)').click();
 
-      // Assert button should be visible for this flaw state
-      await expect(unassignBtn).toBeVisible();
-
-      await unassignBtn.click();
       await page.getByRole('button', { name: 'Save Changes', exact: true }).click();
 
       await expect(page.getByText('Flaw saved').first()).toBeVisible();

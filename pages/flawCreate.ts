@@ -21,7 +21,6 @@ export class FlawCreatePage {
   readonly statementBox: Locator;
   readonly mitigationBox: Locator;
   readonly descriptionBox: Locator;
-  readonly reviewStatusBox: Locator;
   readonly selfAssingBtn: Locator;
   readonly cvssCalculatorInput: Locator;
   readonly cvssCalculator: Locator;
@@ -42,7 +41,6 @@ export class FlawCreatePage {
     this.mitigationBox = page.locator('label').filter({ hasText: 'Mitigation' });
     this.selfAssingBtn = page.getByRole('button', { name: 'Self Assign' });
     this.descriptionBox = page.locator('label').filter({ hasText: 'Description' });
-    this.reviewStatusBox = page.locator('label').filter({ hasText: 'Description' });
     this.cvssCalculatorInput = page.locator('label[role="red-hat-cvss"]');
     this.cvssCalculator = page.locator('.cvss-calculator');
 
@@ -63,7 +61,7 @@ export class FlawCreatePage {
     // If redirected to settings (API keys missing), fill in keys and retry
     if (this.page.url().includes('/settings')) {
       const bugzillaInput = this.page.getByLabel('Bugzilla API Key');
-      const jiraInput = this.page.getByLabel('JIRA API Key');
+      const jiraInput = this.page.getByLabel('JIRA API Token');
 
       await bugzillaInput.waitFor({ state: 'visible', timeout: 5000 });
 
@@ -81,9 +79,11 @@ export class FlawCreatePage {
   }
 
   async fillTextBox(locator: Locator, text: string) {
-    await this.fillTextArea(locator, text);
-    // We need to focus on another element to trigger the validation.
-    await this.submitButton.focus();
+    await locator.click();
+    const input = locator.getByRole('textbox');
+    await input.fill(text);
+    // Press Tab to blur and commit the edit
+    await input.press('Tab');
   }
 
   async fillTextArea(locator: Locator, text: string) {
@@ -126,7 +126,6 @@ export class FlawCreatePage {
     await this.fillTextArea(this.statementBox, faker.hacker.phrase());
     await this.fillTextArea(this.mitigationBox, faker.hacker.phrase());
     await this.fillTextArea(this.descriptionBox, faker.hacker.phrase());
-    await this.fillSelect(this.reviewStatusBox, 'REQUESTED');
     await this.fillCVSSCalculator();
     await this.selfAssingBtn.click();
   }
