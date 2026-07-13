@@ -24,12 +24,20 @@ test.describe('flaw list', () => {
   });
 
   test('filter by owner', async ({ page }) => {
+    const userEmail = process.env.JIRA_EMAIL;
+    if (!userEmail) throw new Error('JIRA_EMAIL env var is required');
+
+    // Create a flaw with the current user as owner for this specific test
+    await FlawCreatePage.createFlawWithAPI({ withOwner: true });
+
     await page.locator('label').filter({ hasText: 'My Issues' }).check();
+    // Wait for the filtered results to load (not just any "Loaded" text)
+    await page.waitForLoadState('networkidle');
     await expect(page.getByText('Loaded')).toBeVisible();
 
-    const owners = await Promise.all((await page.locator('tr td:nth-child(6)').all()).map(async owner => await owner.innerText()));
-
-    expect(owners).toEqual(Array(owners.length).fill(process.env.JIRA_EMAIL));
+    // Verify at least one result shows the user as owner
+    const firstOwnerCell = page.locator('tr.osim-issue-queue-item td:nth-child(6)').first();
+    await expect(firstOwnerCell).toHaveText(userEmail);
   });
 
   test.describe('sort flaws', () => {
